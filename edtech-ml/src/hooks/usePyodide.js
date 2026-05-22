@@ -1,89 +1,116 @@
 import { useState, useEffect, useCallback } from 'react';
 
-// Singleton-состояние вне компонента
-let worker = null;
-let isReady = false;
-let messageCallbacks = {};
-let messageIdCounter = 0;
-const readyListeners = new Set();
+/**
+ * Менеджер для управления Web Worker с Pyodide.
+ * Инкапсулирует логику инициализации, обмена сообщениями и прерывания.
+ */
+class PyodideManager {
+  constructor() {
+    this.worker = null;
+    this.isReady = false;
+    this.messageCallbacks = new Map();
+    this.messageIdCounter = 0;
+    this.listeners = new Set();
+  }
 
-const initWorker = () => {
-  if (worker) return worker;
+  init() {
+    if (this.worker) return;
 
-  // Инициализация Web Worker через синтаксис Vite
-  worker = new Worker(new URL('../workers/pyodideWorker.js', import.meta.url));
-  isReady = false;
+    this.worker = new Worker(new URL('../workers/pyodideWorker.js', import.meta.url));
+    this.isReady = false;
 
-  worker.onmessage = (e) => {
-    const { type, id, result, output, error, y_start, y_end } = e.data;
+    this.worker.onmessage = (e) => {
+      const { type, id, result, output, error, y_start, y_end } = e.data;
 
-    if (type === 'READY') {
-      isReady = true;
-      readyListeners.forEach(fn => fn(true));
-      return;
-    }
-
-    if (type === 'UPDATE_LINE') {
-      // Вызываем глобальную функцию JSXGraph
-      if (window.updateLine) window.updateLine(y_start, y_end);
-      return;
-    }
-
-    if (messageCallbacks[id]) {
-      if (type === 'ERROR') {
-        messageCallbacks[id].reject(new Error(error));
-      } else {
-        messageCallbacks[id].resolve({ result, output, plots: e.data.plots });
+      if (type === 'READY') {
+        this.isReady = true;
+        this.notify(true);
+        return;
       }
-      delete messageCallbacks[id];
-    }
-  };
 
-  return worker;
-};
+      if (type === 'UPDATE_LINE') {
+        if (window.updateLine) window.updateLine(y_start, y_end);
+        return;
+      }
+
+      const callback = this.messageCallbacks.get(id);
+      if (callback) {
+        if (type === 'ERROR') {
+          callback.reject(new Error(error));
+        } else {
+          callback.resolve({ result, output, plots: e.data.plots });
+        }
+        this.messageCallbacks.delete(id);
+      }
+    };
+
+    this.worker.onerror = (e) => {
+      console.error('Pyodide Worker Error:', e);
+      this.notify(false);
+    };
+  }
+
+  addListener(fn) {
+    this.listeners.add(fn);
+    fn(this.isReady);
+  }
+
+  removeListener(fn) {
+    this.listeners.delete(fn);
+  }
+
+  notify(status) {
+    this.listeners.forEach(fn => fn(status));
+  }
+
+  runPython(code) {
+    return new Promise((resolve, reject) => {
+      if (!this.worker || !this.isReady) {
+        return reject(new Error("Среда еще загружается..."));
+      }
+
+      const id = this.messageIdCounter++;
+      this.messageCallbacks.set(id, { resolve, reject });
+      this.worker.postMessage({ id, code });
+    });
+  }
+
+  interrupt() {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+      this.isReady = false;
+      
+      this.messageCallbacks.forEach(cb => 
+        cb.reject(new Error("Выполнение принудительно остановлено."))
+      );
+      this.messageCallbacks.clear();
+      
+      this.notify(false);
+      this.init(); 
+    }
+  }
+}
+
+// Singleton экземпляр
+const manager = new PyodideManager();
 
 export const usePyodide = () => {
-  const [isLoading, setIsLoading] = useState(!isReady);
+  const [isReady, setIsReady] = useState(manager.isReady);
 
   useEffect(() => {
-    initWorker();
+    manager.init();
     
-    const handleReady = (readyStatus) => setIsLoading(!readyStatus);
-    readyListeners.add(handleReady);
-    setIsLoading(!isReady); // Синхронизируем состояние
+    const handleReadyChange = (readyStatus) => setIsReady(readyStatus);
+    manager.addListener(handleReadyChange);
 
     return () => {
-      readyListeners.delete(handleReady);
+      manager.removeListener(handleReadyChange);
     };
   }, []);
 
-  const runPython = useCallback((code) => {
-    return new Promise((resolve, reject) => {
-      if (!worker || !isReady) return reject(new Error("Среда еще загружается..."));
+  const runPython = useCallback((code) => manager.runPython(code), []);
+  const interrupt = useCallback(() => manager.interrupt(), []);
 
-      const id = messageIdCounter++;
-      messageCallbacks[id] = { resolve, reject };
-      worker.postMessage({ id, code });
-    });
-  }, []);
-
-  const interrupt = useCallback(() => {
-    if (worker) {
-      worker.terminate(); // Жестко убиваем поток
-      worker = null;
-      isReady = false;
-      
-      // Отклоняем все зависшие промисы
-      Object.values(messageCallbacks).forEach(cb => 
-        cb.reject(new Error("Выполнение принудительно остановлено."))
-      );
-      messageCallbacks = {};
-      
-      // Уведомляем UI и запускаем новый Worker
-      readyListeners.forEach(fn => fn(false));
-      initWorker(); 
-    }
-  }, []);
-
-  return { isLoading, runPython, interrupt };
+  return { isLoading: !isReady, runPython, interrupt };
 };
