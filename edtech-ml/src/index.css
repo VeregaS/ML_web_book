@@ -1,0 +1,36 @@
+@import "tailwindcss";
+@layer base {
+  body {
+    @apply text-slate-600 leading-relaxed;
+  }
+  h1, h2, h3 {
+    @apply text-slate-900 font-bold tracking-tight;
+  }
+}
+
+.motion-div {
+  will-change: transform, opacity;
+}
+
+/* src/index.css */
+
+/* Делаем скроллбар стабильным для всех браузеров */
+html {
+  overflow-y: scroll; 
+}
+
+/* Настраиваем внешний вид скроллбара, чтобы он не выглядел как из 90-х */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0; /* slate-200 */
+  border-radius: 5px;
+  border: 2px solid #FCFCFC; /* Цвет фона страницы */
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1; /* slate-300 */
+}
