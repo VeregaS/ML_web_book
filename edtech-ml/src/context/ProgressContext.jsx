@@ -14,6 +14,11 @@ export const ProgressProvider = ({ children }) => {
     return savedStreak ? parseInt(savedStreak, 10) : 1;
   });
 
+  const [unlockedTests, setUnlockedTests] = useState(() => {
+    const savedUnlocked = localStorage.getItem('user-unlocked-tests');
+    return savedUnlocked ? JSON.parse(savedUnlocked) : [];
+  });
+
   const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
@@ -24,9 +29,25 @@ export const ProgressProvider = ({ children }) => {
     localStorage.setItem('user-streak', streak);
   }, [streak]);
 
+  useEffect(() => {
+    localStorage.setItem('user-unlocked-tests', JSON.stringify(unlockedTests));
+  }, [unlockedTests]);
+
   const addXP = (amount) => {
     setXp(prev => prev + amount);
     addToast(`Успех! +${amount} XP`, 'success');
+  };
+
+  const spendXP = (amount, testKey) => {
+    if (xp >= amount) {
+      setXp(prev => prev - amount);
+      setUnlockedTests(prev => [...prev, testKey]);
+      addToast(`Потрачено: -${amount} XP`, 'info');
+      return true;
+    } else {
+      addToast("Недостаточно XP для разблокировки!", "error");
+      return false;
+    }
   };
 
   const addToast = (message, type = 'info') => {
@@ -44,7 +65,7 @@ export const ProgressProvider = ({ children }) => {
   };
 
   return (
-    <ProgressContext.Provider value={{ xp, streak, addXP, toasts, removeToast }}>
+    <ProgressContext.Provider value={{ xp, streak, addXP, spendXP, unlockedTests, toasts, removeToast }}>
       {children}
     </ProgressContext.Provider>
   );

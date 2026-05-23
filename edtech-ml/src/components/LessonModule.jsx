@@ -16,7 +16,7 @@ export default function LessonModule({ lesson, onBack }) {
   const stepData = lesson.steps[currentStep];
 
   const { isLoading, runPython, interrupt } = usePyodide();
-  const { addXP } = useProgress();
+  const { xp, addXP, spendXP, unlockedTests } = useProgress();
   
   const [code, setCode] = useState('');
   const [output, setOutput] = useState('');
@@ -24,6 +24,10 @@ export default function LessonModule({ lesson, onBack }) {
   const [isExecuting, setIsExecuting] = useState(false);
   const [testStatus, setTestStatus] = useState(null); 
   const [completedSteps, setCompletedSteps] = useState([]);
+
+  // Ключ для разблокировки подсказки
+  const currentHintKey = `${lesson.id}-step-${currentStep}_hint`;
+  const isHintUnlocked = unlockedTests.includes(currentHintKey);
 
   // Загружаем список пройденных шагов для текущего урока
   useEffect(() => {
@@ -95,15 +99,9 @@ export default function LessonModule({ lesson, onBack }) {
         }
       }
     } catch (err) {
-      if (withTests && err.message.includes('AssertionError')) {
-        setTestStatus('error');
-        const lines = err.message.split('\n');
-        const assertError = lines.find(line => line.includes('AssertionError')) || 'Тесты не пройдены.';
-        setOutput(`[ОШИБКА ПРОВЕРКИ]: ${assertError}`);
-      } else {
-        setOutput(`[Ошибка выполнения]:\n${err.message}`);
-        setTestStatus('error');
-      }
+      setTestStatus('error');
+      // Теперь ошибки ВСЕГДА выводятся в консоль полностью
+      setOutput(`[Ошибка выполнения]:\n${err.message}`);
     } finally {
       setIsExecuting(false);
     }
@@ -165,7 +163,7 @@ export default function LessonModule({ lesson, onBack }) {
            
            <div className="p-8 overflow-y-auto flex-1 prose prose-slate max-w-none relative">
              {completedSteps.includes(currentStep) && (
-               <div className="absolute top-6 right-8 bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 border border-green-200 shadow-sm animate-in fade-in slide-in-from-top-2">
+               <div className="absolute top-6 right-8 bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 border border-green-200 shadow-sm">
                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                  Завершено
                </div>
@@ -183,6 +181,38 @@ export default function LessonModule({ lesson, onBack }) {
                <div className="mt-8 p-6 bg-blue-50/50 rounded-2xl border border-blue-100/60 shadow-sm">
                   <h3 className="text-blue-900 mt-0 flex items-center gap-2">📝 Задание</h3>
                   <MarkdownBlock content={stepData.task} />
+               </div>
+             )}
+
+             {/* Блок подсказки за XP */}
+             {stepData.hint && (
+               <div className="mt-4">
+                 {!isHintUnlocked ? (
+                   <button 
+                     onClick={() => spendXP(20, currentHintKey)}
+                     disabled={xp < 20}
+                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                       xp >= 20 
+                       ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-200' 
+                       : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                     }`}
+                   >
+                     <span>💡 Нужна подсказка?</span>
+                     <span className="bg-white/50 px-1.5 py-0.5 rounded-lg border border-amber-300/30">20 XP</span>
+                   </button>
+                 ) : (
+                   <motion.div 
+                     initial={{ opacity: 0, y: 5 }} 
+                     animate={{ opacity: 1, y: 0 }}
+                     className="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex gap-3 shadow-sm"
+                   >
+                     <span className="text-xl">💡</span>
+                     <div className="text-sm text-amber-800 leading-relaxed">
+                       <span className="font-bold block mb-1 uppercase text-[10px] tracking-widest opacity-60">Подсказка:</span>
+                       {stepData.hint}
+                     </div>
+                   </motion.div>
+                 )}
                </div>
              )}
            </div>
@@ -219,7 +249,7 @@ export default function LessonModule({ lesson, onBack }) {
                     )}
                  </AnimatePresence>
 
-                 <div className="h-48 shrink-0 overflow-hidden"><SandboxConsole output={output} testStatus={testStatus} /></div>
+                 <div className="h-48 shrink-0"><SandboxConsole output={output} testStatus={testStatus} /></div>
               </div>
            </div>
            <SandboxPlots plots={plots} />
