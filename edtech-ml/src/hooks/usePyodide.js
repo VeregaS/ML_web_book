@@ -11,6 +11,7 @@ class PyodideManager {
     this.messageCallbacks = new Map();
     this.messageIdCounter = 0;
     this.listeners = new Set();
+    this.activeStdoutCallback = null;
   }
 
   init() {
@@ -28,6 +29,13 @@ class PyodideManager {
         return;
       }
 
+      if (type === 'STDOUT') {
+        if (this.activeStdoutCallback) {
+          this.activeStdoutCallback(output);
+        }
+        return;
+      }
+
       if (type === 'UPDATE_LINE') {
         if (window.updateLine) window.updateLine(y_start, y_end);
         return;
@@ -38,9 +46,10 @@ class PyodideManager {
         if (type === 'ERROR') {
           callback.reject(new Error(error));
         } else {
-          callback.resolve({ result, output, plots: e.data.plots });
+          callback.resolve({ result, plots: e.data.plots });
         }
         this.messageCallbacks.delete(id);
+        this.activeStdoutCallback = null;
       }
     };
 
@@ -63,13 +72,14 @@ class PyodideManager {
     this.listeners.forEach(fn => fn(status));
   }
 
-  runPython(code, testCode = null) {
+  runPython(code, testCode = null, onStdout = null) {
     return new Promise((resolve, reject) => {
       if (!this.worker || !this.isReady) {
         return reject(new Error("Среда еще загружается..."));
       }
 
       const id = this.messageIdCounter++;
+      this.activeStdoutCallback = onStdout;
       this.messageCallbacks.set(id, { resolve, reject });
       this.worker.postMessage({ id, code, testCode });
     });
@@ -85,6 +95,7 @@ class PyodideManager {
         cb.reject(new Error("Выполнение принудительно остановлено."))
       );
       this.messageCallbacks.clear();
+      this.activeStdoutCallback = null;
       
       this.notify(false);
       this.init(); 
@@ -109,7 +120,10 @@ export const usePyodide = () => {
     };
   }, []);
 
-  const runPython = useCallback((code) => manager.runPython(code), []);
+  // Обновляем сигнатуру, чтобы пробросить onStdout
+  const runPython = useCallback((code, testCode, onStdout) => 
+    manager.runPython(code, testCode, onStdout), []);
+    
   const interrupt = useCallback(() => manager.interrupt(), []);
 
   return { isLoading: !isReady, runPython, interrupt };

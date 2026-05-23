@@ -5,6 +5,8 @@ import SandboxEditor from './Sandbox/SandboxEditor';
 import SandboxConsole from './Sandbox/SandboxConsole';
 import SandboxPlots from './Sandbox/SandboxPlots';
 import InteractiveRegression from './InteractiveRegression';
+import SVMBoard from './SVMBoard';
+import GradientDescentBoard from './GradientDescentBoard';
 import JupyterSandbox from './JupyterSandbox';
 import { usePyodide } from '../hooks/usePyodide';
 import { useProgress } from '../context/ProgressContext';
@@ -70,18 +72,21 @@ export default function LessonModule({ lesson, onBack }) {
     const testsToRun = (withTests && stepData.testCode) ? stepData.testCode : null;
 
     try {
-      const { result, output: stdout, plots: newPlots } = await runPython(code, testsToRun);
+      const { result, plots: newPlots } = await runPython(code, testsToRun, (chunk) => {
+        setOutput(prev => prev + chunk + "\n");
+      });
       
-      let finalOutput = stdout;
       if (result !== undefined) {
-        finalOutput += `\n[Результат]: ${result}`;
+        setOutput(prev => prev + `\n[Результат]: ${result}`);
       }
 
-      if (finalOutput.trim() === '') {
-        finalOutput = withTests ? '[Тесты пройдены]' : '[Код выполнен успешно]';
-      }
+      setOutput(prev => {
+        if (prev.trim() === '') {
+          return withTests ? '[Тесты пройдены]' : '[Код выполнен успешно]';
+        }
+        return prev;
+      });
 
-      setOutput(finalOutput.trim());
       setPlots(newPlots || []);
       
       if (withTests) {
@@ -195,6 +200,8 @@ export default function LessonModule({ lesson, onBack }) {
                     <h2 className="text-xl font-bold text-slate-900 mb-6 tracking-tight">Шаг {currentStep + 1}</h2>
                     <MarkdownBlock content={stepData.theory} />
                     {stepData.type === 'regression' && <div className="my-8"><InteractiveRegression /></div>}
+                    {stepData.type === 'svm' && <div className="my-8"><SVMBoard /></div>}
+                    {stepData.type === 'gradient_descent' && <div className="my-8"><GradientDescentBoard /></div>}
                     {stepData.type === 'jupyter' && <div className="my-8"><JupyterSandbox /></div>}
                   </motion.div>
                 ) : (
