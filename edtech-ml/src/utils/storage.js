@@ -23,6 +23,28 @@ export const storage = {
     }
   },
 
+  isStepCompleted: (lessonId, stepIndex) => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.COMPLETED_STEPS);
+      const steps = data ? JSON.parse(data) : [];
+      return steps.includes(`${lessonId}-${stepIndex}`);
+    } catch (e) {
+      return false;
+    }
+  },
+
+  setStepCompleted: (lessonId, stepIndex) => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.COMPLETED_STEPS);
+      const steps = data ? JSON.parse(data) : [];
+      const stepKey = `${lessonId}-${stepIndex}`;
+      if (!steps.includes(stepKey)) {
+        steps.push(stepKey);
+        localStorage.setItem(STORAGE_KEYS.COMPLETED_STEPS, JSON.stringify(steps));
+      }
+    } catch (e) {}
+  },
+
   getLessonCode: (lessonId, defaultCode = '') => {
     try {
       const savedCode = localStorage.getItem(STORAGE_KEYS.LESSON_CODE(lessonId));

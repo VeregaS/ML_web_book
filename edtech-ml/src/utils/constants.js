@@ -1,5 +1,6 @@
 export const STORAGE_KEYS = {
   COMPLETED_LESSONS: 'completedLessons',
+  COMPLETED_STEPS: 'completedSteps', // Для предотвращения накрутки XP
   LESSON_CODE: (id) => `ml-lesson-${id}`,
 };
 

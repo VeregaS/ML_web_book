@@ -20,29 +20,37 @@ const readyPromise = init();
 
 self.onmessage = async (event) => {
   await readyPromise;
-  const { id, code } = event.data;
+  const { id, code, testCode } = event.data;
   
   try {
     const packagesToLoad = [];
-    if (code.includes('numpy')) packagesToLoad.push('numpy');
-    if (code.includes('matplotlib')) packagesToLoad.push('matplotlib');
-    if (code.includes('scipy')) packagesToLoad.push('scipy');
-    if (code.includes('pandas')) packagesToLoad.push('pandas');
+    const fullCodeForImports = code + (testCode || "");
+    if (fullCodeForImports.includes('numpy')) packagesToLoad.push('numpy');
+    if (fullCodeForImports.includes('matplotlib')) packagesToLoad.push('matplotlib');
+    if (fullCodeForImports.includes('scipy')) packagesToLoad.push('scipy');
+    if (fullCodeForImports.includes('pandas')) packagesToLoad.push('pandas');
+    if (fullCodeForImports.includes('sklearn')) packagesToLoad.push('scikit-learn');
 
     if (packagesToLoad.length > 0) {
       await self.pyodide.loadPackage(packagesToLoad);
     }
-    // И все равно запускаем авто-анализатор для остальных
-    await self.pyodide.loadPackagesFromImports(code);
+    await self.pyodide.loadPackagesFromImports(fullCodeForImports);
+
+    // Очистка
+    await self.pyodide.runPythonAsync(`
+for _k in list(globals().keys()):
+    if not _k.startswith('__') and _k != 'sendPlotToMain':
+        try: del globals()[_k]
+        except: pass
+`);
     
-    // 2. В патче вызываем функцию напрямую, так как она уже в globals
+    // Патч matplotlib
     const patchCode = `
 try:
     import matplotlib
     matplotlib.use('agg')
     import matplotlib.pyplot as plt
     import io, base64
-
     def _custom_show(*args, **kwargs):
         fig = plt.gcf()
         buf = io.BytesIO()
@@ -51,10 +59,8 @@ try:
         sendPlotToMain(base64.b64encode(buf.read()).decode('utf-8'))
         plt.clf()
         plt.close('all')
-
     plt.show = _custom_show
-except ImportError:
-    pass
+except: pass
 `;
     await self.pyodide.runPythonAsync(patchCode);
     
@@ -62,7 +68,16 @@ except ImportError:
     let output = "";
     self.pyodide.setStdout({ batched: (msg) => { output += msg + "\n"; } });
     
+    // 1. ВЫПОЛНЯЕМ КОД ПОЛЬЗОВАТЕЛЯ
     const result = await self.pyodide.runPythonAsync(code);
+    
+    // 2. СИНХРОНИЗИРУЕМ ВЫВОД ДЛЯ ТЕСТОВ
+    self.pyodide.globals.set("_stdout", output);
+    
+    // 3. ВЫПОЛНЯЕМ ТЕСТЫ, ЕСЛИ ОНИ ЕСТЬ
+    if (testCode) {
+      await self.pyodide.runPythonAsync(testCode);
+    }
     
     self.postMessage({ 
       type: 'RESULT', 

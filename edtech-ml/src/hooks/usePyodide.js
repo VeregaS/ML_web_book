@@ -63,7 +63,7 @@ class PyodideManager {
     this.listeners.forEach(fn => fn(status));
   }
 
-  runPython(code) {
+  runPython(code, testCode = null) {
     return new Promise((resolve, reject) => {
       if (!this.worker || !this.isReady) {
         return reject(new Error("Среда еще загружается..."));
@@ -71,7 +71,7 @@ class PyodideManager {
 
       const id = this.messageIdCounter++;
       this.messageCallbacks.set(id, { resolve, reject });
-      this.worker.postMessage({ id, code });
+      this.worker.postMessage({ id, code, testCode });
     });
   }
 
