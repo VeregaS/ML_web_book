@@ -1,67 +1,101 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
+import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import DocTooltip from './DocTooltip';
+import { GLOBAL_GLOSSARY } from '../utils/glossary';
 import 'katex/dist/katex.min.css';
 
-const GLOSSARY = {
-  'MSE': {
-    definition: 'Среднеквадратичная ошибка. Мера близости линии регрессии к точкам данных.',
-    example: 'mse = np.mean((y_true - y_pred)**2)'
-  },
-  'NumPy': {
-    definition: 'Библиотека для работы с многомерными массивами и высокоуровневыми математическими функциями.',
-    example: 'import numpy as np; a = np.array([1, 2, 3])'
-  },
-  'Matplotlib': {
-    definition: 'Библиотека для визуализации данных и построения 2D-графиков.',
-    example: 'import matplotlib.pyplot as plt; plt.plot(x, y)'
-  },
-  'Векторизация': {
-    definition: 'Процесс применения операций сразу ко всему массиву данных без использования явных циклов.',
-    example: 'result = array * 10 # Вместо цикла for'
-  }
-};
+export default function MarkdownBlock({ content, extraGlossary = {}, excludeTerm = null, isGlossaryMode = false }) {
+  const glossary = useMemo(() => {
+    const base = { ...GLOBAL_GLOSSARY, ...extraGlossary };
+    if (excludeTerm) {
+      // Убираем сам термин из глоссария для этого блока, чтобы избежать саморекурсии
+      const filtered = { ...base };
+      const keyToExclude = Object.keys(filtered).find(
+        k => k.toLowerCase() === excludeTerm.toLowerCase()
+      );
+      if (keyToExclude) delete filtered[keyToExclude];
+      return filtered;
+    }
+    return base;
+  }, [extraGlossary, excludeTerm]);
 
-export default function MarkdownBlock({ content }) {
+  // Экранирование спецсимволов для регулярки
+  const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const processText = (text) => {
+    if (typeof text !== 'string' || text.trim() === '') return text;
+
+    const terms = Object.keys(glossary).sort((a, b) => b.length - a.length);
+    // Ищем термины как отдельные слова или фразы (не внутри других слов)
+    const pattern = `(${terms.map(t => escapeRegExp(t)).join('|')})`;
+    const regex = new RegExp(pattern, 'gi');
+    
+    const parts = text.split(regex);
+    if (parts.length === 1) return text;
+
+    return parts.map((part, i) => {
+      const lowerPart = part.toLowerCase().trim();
+      const termKey = Object.keys(glossary).find(k => k.toLowerCase() === lowerPart);
+
+      if (termKey) {
+        return (
+          <DocTooltip 
+            key={`${lowerPart}-${i}`}
+            term={part} 
+            definition={glossary[termKey].definition} 
+            example={glossary[termKey].example} 
+            isGlossaryMode={isGlossaryMode}
+          />
+        );
+      }
+      return part;
+    });
+  };
+
+  const enhance = (children) => {
+    return React.Children.map(children, child => {
+      if (typeof child === 'string') return processText(child);
+      return child;
+    });
+  };
+
+  if (!content) return null;
+
   return (
-    <div className="text-lg leading-relaxed text-slate-800 space-y-4">
+    <div className="text-slate-800 space-y-4 prose-sm max-w-none">
       <ReactMarkdown
-        remarkPlugins={[remarkMath]}
+        remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}
         components={{
-          p: ({ node, children, ...props }) => {
-            // Безопасно преобразуем children в массив
-            const childrenArray = React.Children.toArray(children);
-            
-            const processedChildren = childrenArray.map((child, idx) => {
-              if (typeof child === 'string') {
-                // Разделяем на слова, сохраняя разделители (пробелы, знаки препинания)
-                const words = child.split(/(\b[\w\u0400-\u04FF]+\b)/g);
-                return words.map((word, wIdx) => {
-                  const term = Object.keys(GLOSSARY).find(t => t.toLowerCase() === word.toLowerCase());
-                  if (term) {
-                    return (
-                      <DocTooltip 
-                        key={`${idx}-${wIdx}`}
-                        term={word} 
-                        definition={GLOSSARY[term].definition} 
-                        example={GLOSSARY[term].example} 
-                      />
-                    );
-                  }
-                  return word;
-                });
-              }
-              return child;
-            });
-            return <p className="mb-4" {...props}>{processedChildren}</p>;
-          },
-          strong: ({ node, ...props }) => <strong className="font-semibold text-slate-900" {...props} />,
+          // Перехватываем все основные текстовые контейнеры
+          p: ({ children }) => <p className="mb-4 leading-relaxed">{enhance(children)}</p>,
+          li: ({ children }) => <li className="mb-1">{enhance(children)}</li>,
+          strong: ({ children }) => <strong className="font-bold text-slate-950">{enhance(children)}</strong>,
+          em: ({ children }) => <em className="italic">{enhance(children)}</em>,
+          
+          table: ({ children }) => (
+            <div className="glossary-table-container custom-scrollbar">
+              {children}
+            </div>
+          ),
+          thead: ({ children }) => <thead className="bg-slate-50 border-b border-slate-200">{children}</thead>,
+          th: ({ children }) => (
+            <th className="px-4 py-3 font-bold text-slate-900 text-left whitespace-nowrap">
+              {enhance(children)}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td className="px-4 py-3 border-b border-slate-100 text-slate-600">
+              {enhance(children)}
+            </td>
+          ),
+          tr: ({ children }) => <tr className="last:border-0 hover:bg-slate-50/50 transition-colors">{children}</tr>,
           code: ({ node, inline, ...props }) => 
             inline ? (
-              <code className="bg-slate-100 text-red-600 px-1.5 py-0.5 rounded text-sm font-mono" {...props} />
+              <code className="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-sm font-mono" {...props} />
             ) : (
               <code {...props} />
             ),

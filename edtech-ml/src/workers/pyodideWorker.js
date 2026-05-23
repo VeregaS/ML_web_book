@@ -60,16 +60,26 @@ self.onmessage = async (event) => {
     }
     await self.pyodide.loadPackagesFromImports(fullCode);
 
-    // 2. Изоляция пространства имен
+    // 2. Изоляция пространства имен (Hard Reset)
     const clearGlobalsCode = `
 import sys
-_keep = {'sys', 'np', 'pd', 'plt', 'sklearn', 'sendPlotToMain', 'sendMetricToMain', '_stdout'}
+import importlib
+
+# Список системных модулей и функций, которые нельзя удалять
+_keep = {'sys', 'np', 'pd', 'plt', 'sklearn', 'sendPlotToMain', 'sendMetricToMain', '_stdout', 'importlib', 're', 'unittest', 'json', 'io'}
+
+# Удаляем все пользовательские переменные
 for _k in list(globals().keys()):
     if not _k.startswith('__') and _k not in _keep:
         try:
             del globals()[_k]
         except:
             pass
+
+# Принудительно выгружаем модули, если они были загружены ранее
+for mod in ['student_code', 'test_code']:
+    if mod in sys.modules:
+        del sys.modules[mod]
 `;
     await self.pyodide.runPythonAsync(clearGlobalsCode);
     
@@ -120,7 +130,6 @@ except ImportError:
     // 6. Выполнение Unit-тестов
     let testResults = null;
     if (testCode) {
-      // Сохраняем код в виртуальную файловую систему
       self.pyodide.FS.writeFile('student_code.py', code);
       self.pyodide.FS.writeFile('test_code.py', testCode);
       
@@ -129,29 +138,82 @@ import unittest
 import json
 import io
 import sys
+import re
 import importlib
 
-# Принудительная перезагрузка модулей для свежего кода
-if 'student_code' in sys.modules:
-    importlib.reload(sys.modules['student_code'])
-else:
+try:
     import student_code
-
-if 'test_code' in sys.modules:
-    importlib.reload(sys.modules['test_code'])
-else:
     import test_code
+    importlib.reload(student_code)
+    importlib.reload(test_code)
+except Exception:
+    pass
 
-suite = unittest.TestLoader().loadTestsFromModule(sys.modules['test_code'])
+suite = unittest.TestLoader().loadTestsFromModule(test_code)
 stream = io.StringIO()
 runner = unittest.TextTestRunner(stream=stream, verbosity=0)
 res = runner.run(suite)
 
+# Стандартизированный LeetCode-вывод
+formatted_output = ""
+if not res.wasSuccessful():
+    formatted_output += "\\n" + "-"*30 + "\\n"
+    formatted_output += " \\u2716 \\u0422\\u0415\\u0421\\u0422\\u042b \\u041d\\u0415 \\u041f\\u0420\\u041e\\u0419\\u0414\\u0415\\u041d\\u042b\\n"
+    formatted_output += "-"*30 + "\\n"
+    
+    for failure in res.failures + res.errors:
+        err_msg = str(failure[1])
+        
+        # Обработка TypeError (возникает если функция вернула None в np.testing)
+        if "TypeError: ufunc 'isfinite'" in err_msg or "NoneType" in err_msg:
+             formatted_output += "\\u041e\\u0448\\u0438\\u0431\\u043a\\u0430: \\u0424\\u0443\\u043d\\u043a\\u0446\\u0438\\u044f \\u0432\\u0435\\u0440\\u043d\\u0443\\u043b\\u0430 None \\u0432\\u043c\\u0435\\u0441\\u0442\\u043e \\u0447\\u0438\\u0441\\u043b\\u0430/\\u043c\\u0430\\u0441\\u0441\\u0438\\u0432\\u0430\\n"
+             continue
+
+        # 1. Поиск математической ошибки (Expected vs Actual)
+        match = re.search(r"AssertionError: (.*?) (!=|is not|is|==) (.*)", err_msg)
+        if not match:
+            # Паттерн assertAlmostEqual
+            match = re.search(r"AssertionError: (.*?) != (.*?) within (.*?) places", err_msg)
+            
+        is_numpy_error = False
+        if not match:
+            # Паттерн numpy
+            match = re.search(r"Actual: (.*?)\\nExpected: (.*)", err_msg, re.DOTALL)
+            is_numpy_error = True
+            
+        if match:
+            try:
+                if is_numpy_error:
+                    actual = match.group(1).strip()
+                    expected = match.group(2).strip()
+                else:
+                    actual = match.group(1).strip()
+                    expected = match.group(3).strip() if match.lastindex >= 3 else match.group(2).strip()
+
+                formatted_output += f"\\u041e\\u0436\\u0438\\u0434\\u0430\\u043b\\u043e\\u0441\\u044c:  {expected}\\n"
+                formatted_output += f"\\u041f\\u043e\\u043b\\u0443\\u0447\\u0435\\u043d\\u043e:   {actual}\\n"
+            except:
+                err_line = err_msg.split('\\n')[-1]
+                formatted_output += f"\\u2716 \\u041e\\u0448\\u0438\\u0431\\u043a\\u0430: {err_line}\\n"
+        else:
+            # 2. Поиск структурной ошибки
+            if "AttributeError" in err_msg:
+                attr_match = re.search(r"has no attribute '(.*?)'", err_msg)
+                missing = attr_match.group(1) if attr_match else "item"
+                formatted_output += f"\\u26a0\\ufe0f \\u041e\\u0448\\u0438\\u0431\\u043a\\u0430: \\u041d\\u0435 \\u043d\\u0430\\u0439\\u0434\\u0435\\u043d\\u0430 \\u0444\\u0443\\u043d\\u043a\\u0446\\u0438\\u044f '{missing}'\\n"
+            else:
+                last_line = err_msg.split('\\n')[-1]
+                formatted_output += f"\\u2716 \\u041e\\u0448\\u0438\\u0431\\u043a\\u0430: {last_line}\\n"
+            
+    formatted_output += "-"*30 + "\\n"
+else:
+    formatted_output += "\\n" + "-"*30 + "\\n"
+    formatted_output += " \\u2705 \\u0423\\u0421\\u041f\\u0415\\u0425: \\u0412\\u0421\\u0415 \\u0422\\u0415\\u0421\\u0422\\u042b \\u041f\\u0420\\u041e\\u0419\\u0414\\u0415\\u041d\\u042b\\n"
+    formatted_output += "-"*30 + "\\n"
+
 json.dumps({
     "wasSuccessful": res.wasSuccessful(),
-    "errors": [str(e[1]) for e in res.errors],
-    "failures": [str(f[1]) for f in res.failures],
-    "output": stream.getvalue()
+    "output": formatted_output
 })
 `;
       const testJson = await self.pyodide.runPythonAsync(runnerCode);
