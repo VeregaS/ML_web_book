@@ -4,6 +4,7 @@ import MarkdownBlock from './MarkdownBlock';
 import SandboxEditor from './Sandbox/SandboxEditor';
 import SandboxConsole from './Sandbox/SandboxConsole';
 import SandboxPlots from './Sandbox/SandboxPlots';
+import DataViewer from './Sandbox/DataViewer';
 import InteractiveRegression from './InteractiveRegression';
 import SVMBoard from './SVMBoard';
 import GradientDescentBoard from './GradientDescentBoard';
@@ -15,7 +16,7 @@ import { TRANSITIONS } from '../utils/constants';
 
 export default function LessonModule({ lesson, onBack }) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [activeTab, setActiveTab] = useState('theory'); // 'theory' | 'task'
+  const [activeTab, setActiveTab] = useState('theory');
   const stepData = lesson.steps[currentStep];
 
   const { isLoading, runPython, interrupt } = usePyodide();
@@ -24,15 +25,15 @@ export default function LessonModule({ lesson, onBack }) {
   const [code, setCode] = useState('');
   const [output, setOutput] = useState('');
   const [plots, setPlots] = useState([]);
+  const [metrics, setMetrics] = useState([]);
+  const [dataFrame, setDataFrame] = useState(null);
   const [isExecuting, setIsExecuting] = useState(false);
   const [testStatus, setTestStatus] = useState(null); 
   const [completedSteps, setCompletedSteps] = useState([]);
 
-  // Ключ для разблокировки подсказки
   const currentHintKey = `${lesson.id}-step-${currentStep}_hint`;
   const isHintUnlocked = unlockedTests.includes(currentHintKey);
 
-  // Загружаем список пройденных шагов для текущего урока
   useEffect(() => {
     const passed = lesson.steps
       .map((_, idx) => idx)
@@ -45,6 +46,8 @@ export default function LessonModule({ lesson, onBack }) {
     setCode(savedCode);
     setOutput('');
     setPlots([]);
+    setMetrics([]);
+    setDataFrame(null);
     setTestStatus(null);
   }, [currentStep, lesson.id, stepData]);
 
@@ -59,6 +62,8 @@ export default function LessonModule({ lesson, onBack }) {
       storage.clearLessonCode(`${lesson.id}-step-${currentStep}`);
       setOutput('');
       setPlots([]);
+      setMetrics([]);
+      setDataFrame(null);
       setTestStatus(null);
     }
   };
@@ -67,37 +72,58 @@ export default function LessonModule({ lesson, onBack }) {
     setIsExecuting(true);
     setOutput('');
     setPlots([]);
+    setMetrics([]);
+    setDataFrame(null);
     setTestStatus(null);
     
     const testsToRun = (withTests && stepData.testCode) ? stepData.testCode : null;
 
     try {
-      const { result, plots: newPlots } = await runPython(code, testsToRun, (chunk) => {
-        setOutput(prev => prev + chunk + "\n");
-      });
+      const { result, plots: newPlots, isDataFrame, testResults, dfData } = await runPython(
+        code, 
+        testsToRun, 
+        (chunk) => setOutput(prev => prev + chunk),
+        (metric) => setMetrics(prev => [...prev, metric])
+      );
       
-      if (result !== undefined) {
-        setOutput(prev => prev + `\n[Результат]: ${result}`);
+      let finalOutput = '';
+      if (result !== undefined && !isDataFrame) {
+        finalOutput += `\n[Результат]: ${result}`;
+      }
+
+      if (isDataFrame && dfData) {
+        setDataFrame(dfData);
       }
 
       setOutput(prev => {
-        if (prev.trim() === '') {
-          return withTests ? '[Тесты пройдены]' : '[Код выполнен успешно]';
+        let newOut = prev + finalOutput;
+        if (newOut.trim() === '') {
+          return withTests ? '[Выполнение завершено]' : '[Код выполнен успешно]';
         }
-        return prev;
+        return newOut;
       });
 
       setPlots(newPlots || []);
       
       if (withTests) {
-        setTestStatus('success');
-        if (!storage.isStepCompleted(lesson.id, currentStep)) {
-          addXP(10);
-          storage.setStepCompleted(lesson.id, currentStep);
-          setCompletedSteps(prev => [...prev, currentStep]);
-        }
-        if (currentStep === lesson.steps.length - 1) {
-          storage.setLessonCompleted(lesson.id);
+        if (testResults) {
+          if (testResults.wasSuccessful) {
+            setTestStatus('success');
+            if (!storage.isStepCompleted(lesson.id, currentStep)) {
+              addXP(10);
+              storage.setStepCompleted(lesson.id, currentStep);
+              setCompletedSteps(prev => [...prev, currentStep]);
+            }
+            if (currentStep === lesson.steps.length - 1) {
+              storage.setLessonCompleted(lesson.id);
+            }
+          } else {
+            setTestStatus('error');
+            setOutput(prev => prev + `\n\n[ОШИБКИ ТЕСТОВ]:\n${testResults.output}\n${testResults.failures.join('\\n')}\n${testResults.errors.join('\\n')}`);
+          }
+        } else {
+          // Fallback, если тесты не вернули testResults (например, старые ассерты без unittest)
+          setTestStatus('success');
         }
       }
     } catch (err) {
@@ -305,7 +331,10 @@ export default function LessonModule({ lesson, onBack }) {
              </div>
           </div>
           
-          <SandboxPlots plots={plots} />
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <DataViewer data={dataFrame} />
+            <SandboxPlots plots={plots} metrics={metrics} />
+          </div>
         </div>
       </div>
     </div>
