@@ -126,22 +126,25 @@ except ImportError:
       
       const runnerCode = `
 import unittest
-import test_code
 import json
 import io
 import sys
+import importlib
 
-# Перезагружаем модули, чтобы изменения подтянулись
+# Принудительная перезагрузка модулей для свежего кода
 if 'student_code' in sys.modules:
-    del sys.modules['student_code']
+    importlib.reload(sys.modules['student_code'])
+else:
+    import student_code
+
 if 'test_code' in sys.modules:
-    del sys.modules['test_code']
+    importlib.reload(sys.modules['test_code'])
+else:
+    import test_code
 
-import test_code
-
-suite = unittest.TestLoader().loadTestsFromModule(test_code)
+suite = unittest.TestLoader().loadTestsFromModule(sys.modules['test_code'])
 stream = io.StringIO()
-runner = unittest.TextTestRunner(stream=stream, verbosity=2)
+runner = unittest.TextTestRunner(stream=stream, verbosity=0)
 res = runner.run(suite)
 
 json.dumps({
