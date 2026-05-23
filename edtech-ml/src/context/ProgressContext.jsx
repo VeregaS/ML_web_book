@@ -9,11 +9,6 @@ export const ProgressProvider = ({ children }) => {
     return savedXp ? parseInt(savedXp, 10) : 0;
   });
 
-  const [streak, setStreak] = useState(() => {
-    const savedStreak = localStorage.getItem('user-streak');
-    return savedStreak ? parseInt(savedStreak, 10) : 1;
-  });
-
   const [unlockedTests, setUnlockedTests] = useState(() => {
     const savedUnlocked = localStorage.getItem('user-unlocked-tests');
     return savedUnlocked ? JSON.parse(savedUnlocked) : [];
@@ -24,10 +19,6 @@ export const ProgressProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('user-xp', xp);
   }, [xp]);
-
-  useEffect(() => {
-    localStorage.setItem('user-streak', streak);
-  }, [streak]);
 
   useEffect(() => {
     localStorage.setItem('user-unlocked-tests', JSON.stringify(unlockedTests));
@@ -65,7 +56,7 @@ export const ProgressProvider = ({ children }) => {
   };
 
   return (
-    <ProgressContext.Provider value={{ xp, streak, addXP, spendXP, unlockedTests, toasts, removeToast }}>
+    <ProgressContext.Provider value={{ xp, addXP, spendXP, unlockedTests, toasts, removeToast }}>
       {children}
     </ProgressContext.Provider>
   );

@@ -1,25 +1,20 @@
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 
-const SandboxEditor = ({ code, onChange, onReset }) => (
-  <div className="rounded-lg overflow-hidden border border-slate-700 shadow-inner">
-    <div className="bg-slate-800 text-slate-400 text-xs px-4 py-1.5 font-mono border-b border-slate-700 flex justify-between items-center">
-      <span>main.py</span>
-      <button 
-        onClick={onReset}
-        className="text-slate-400 hover:text-white transition-colors"
-        title="Сбросить код к начальному состоянию"
-      >
-        ⟲ Сбросить
-      </button>
-    </div>
+/**
+ * Базовый компонент редактора кода.
+ * Теперь он не имеет встроенных рамок и заголовков,
+ * делегируя управление внешним контейнерам.
+ */
+const SandboxEditor = ({ code, onChange }) => (
+  <div className="h-full w-full bg-[#282c34]">
     <CodeMirror
       value={code}
-      height="300px"
+      height="100%"
       theme="dark"
       extensions={[python()]}
       onChange={onChange}
-      className="text-sm sm:text-base font-mono"
+      className="text-sm sm:text-base font-mono h-full"
       basicSetup={{
         lineNumbers: true,
         highlightActiveLineGutter: true,

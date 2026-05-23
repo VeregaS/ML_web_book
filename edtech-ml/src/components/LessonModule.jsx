@@ -13,6 +13,7 @@ import { TRANSITIONS } from '../utils/constants';
 
 export default function LessonModule({ lesson, onBack }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [activeTab, setActiveTab] = useState('theory'); // 'theory' | 'task'
   const stepData = lesson.steps[currentStep];
 
   const { isLoading, runPython, interrupt } = usePyodide();
@@ -25,9 +26,11 @@ export default function LessonModule({ lesson, onBack }) {
   const [testStatus, setTestStatus] = useState(null); 
   const [completedSteps, setCompletedSteps] = useState([]);
 
+  // Ключ для разблокировки подсказки
   const currentHintKey = `${lesson.id}-step-${currentStep}_hint`;
   const isHintUnlocked = unlockedTests.includes(currentHintKey);
 
+  // Загружаем список пройденных шагов для текущего урока
   useEffect(() => {
     const passed = lesson.steps
       .map((_, idx) => idx)
@@ -75,9 +78,7 @@ export default function LessonModule({ lesson, onBack }) {
       }
 
       if (finalOutput.trim() === '') {
-        finalOutput = withTests 
-          ? '[Тесты пройдены]' 
-          : '[Код выполнен успешно]';
+        finalOutput = withTests ? '[Тесты пройдены]' : '[Код выполнен успешно]';
       }
 
       setOutput(finalOutput.trim());
@@ -111,146 +112,193 @@ export default function LessonModule({ lesson, onBack }) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
+      <div className="flex flex-col items-center justify-center h-screen bg-[#FCFCFC]">
         <div className="w-8 h-8 border-2 border-slate-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">Initialising Environment</p>
+        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Initialising Python Engine</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-5">
-          <button onClick={onBack} className="flex items-center gap-2 text-[11px] px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 transition-all font-bold uppercase tracking-widest shadow-sm">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
-            Назад
+    <div className="flex flex-col h-[calc(100vh-140px)] min-h-[600px]">
+      
+      {/* 1. Top Navigation Bar */}
+      <div className="flex items-center justify-between mb-4 bg-white border border-slate-200 rounded-lg p-2 shadow-sm shrink-0">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="text-[10px] px-2.5 py-1.5 border border-slate-200 rounded-md text-slate-500 hover:text-slate-900 transition-all font-bold uppercase tracking-wider bg-slate-50/50 shadow-sm active:scale-95">
+            Выход
           </button>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight m-0">{lesson.title}</h1>
+          <div className="h-4 w-px bg-slate-200"></div>
+          <h1 className="text-sm font-bold text-slate-900 truncate max-w-[200px]">{lesson.title}</h1>
+        </div>
+
+        <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-md border border-slate-200/50">
+          {lesson.steps.map((_, idx) => {
+            const isActive = idx === currentStep;
+            const isDone = completedSteps.includes(idx);
+            return (
+              <button 
+                key={idx} 
+                onClick={() => setCurrentStep(idx)}
+                className={`group relative flex items-center justify-center w-8 h-6 rounded transition-all ${
+                  isActive ? 'bg-indigo-600 text-white shadow-sm' : 
+                  isDone ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200' : 'bg-transparent text-slate-400 hover:bg-slate-200'
+                }`}
+              >
+                <span className="text-[10px] font-black">{idx + 1}</span>
+                {isDone && !isActive && (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white"></div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">
+          {currentStep + 1} / {lesson.steps.length}
         </div>
       </div>
       
-      <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+      {/* 2. Main Workspace (Height Fixed) */}
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-hidden">
         
-        {/* Левая панель */}
-        <div className="flex-1 flex flex-col bg-white rounded-xl border border-slate-200 shadow-sm min-w-0 overflow-hidden">
-           <div className="flex gap-1.5 p-4 border-b border-slate-100 bg-slate-50/50">
-             {lesson.steps.map((_, idx) => {
-                const isActive = idx === currentStep;
-                const isDone = completedSteps.includes(idx);
-                return (
-                  <button 
-                    key={idx} 
-                    onClick={() => setCurrentStep(idx)}
-                    className={`h-1.5 flex-1 rounded-sm transition-all duration-300 ${
-                      isActive ? 'bg-indigo-600' : 
-                      isDone ? 'bg-emerald-500' : 'bg-slate-200'
-                    }`}
-                  />
-                );
-             })}
+        {/* LEFT: Description/Task Tabs */}
+        <div className="flex-1 flex flex-col bg-white rounded-lg border border-slate-200 shadow-sm min-w-0 overflow-hidden">
+           <div className="flex items-center bg-slate-50 border-b border-slate-200 px-2 h-10 shrink-0">
+              <button 
+                onClick={() => setActiveTab('theory')}
+                className={`px-5 h-full text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 ${
+                  activeTab === 'theory' ? 'border-indigo-600 text-indigo-600 bg-white' : 'border-transparent text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                Описание
+              </button>
+              <button 
+                onClick={() => setActiveTab('task')}
+                className={`px-5 h-full text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 ${
+                  activeTab === 'task' ? 'border-indigo-600 text-indigo-600 bg-white' : 'border-transparent text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                Задание
+              </button>
            </div>
-           
-           <div className="p-8 overflow-y-auto flex-1 prose prose-slate prose-sm max-w-none relative">
-             {completedSteps.includes(currentStep) && (
-               <div className="absolute top-8 right-8 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-md border border-emerald-100 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm">
-                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                 Завершено
-               </div>
-             )}
-             <MarkdownBlock content={stepData.theory} />
-             
-             {stepData.type === 'regression' && (
-               <div className="my-8 p-6 bg-slate-50 border border-slate-200 rounded-xl"><InteractiveRegression /></div>
-             )}
-             {stepData.type === 'jupyter' && <JupyterSandbox />}
-             
-             {stepData.task && (
-               <div className="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-xl">
-                  <h3 className="text-slate-900 text-[11px] font-black uppercase tracking-[0.15em] mt-0 mb-4 flex items-center gap-2 text-indigo-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                    Задание
-                  </h3>
-                  <div className="text-slate-700 leading-relaxed"><MarkdownBlock content={stepData.task} /></div>
-               </div>
-             )}
 
-             {stepData.hint && (
-               <div className="mt-6">
-                 {!isHintUnlocked ? (
-                   <button 
-                     onClick={() => spendXP(20, currentHintKey)}
-                     disabled={xp < 20}
-                     className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-bold transition-all border ${
-                       xp >= 20 
-                       ? 'bg-indigo-600 text-white border-indigo-700 hover:bg-indigo-700 shadow-md active:scale-[0.98]' 
-                       : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                     }`}
-                   >
-                     <span>💡 Нужна подсказка?</span>
-                     <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">20 XP</span>
-                   </button>
-                 ) : (
-                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-amber-50 border border-amber-100 rounded-xl shadow-sm">
-                     <div className="text-sm text-amber-900 leading-relaxed">
-                       <span className="font-black block mb-2 uppercase text-[10px] tracking-widest text-amber-600">Совет наставника</span>
-                       {stepData.hint}
-                     </div>
-                   </motion.div>
-                 )}
-               </div>
-             )}
+           <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white">
+              <AnimatePresence mode="wait">
+                {activeTab === 'theory' ? (
+                  <motion.div 
+                    key="theory"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    transition={{ duration: 0.1 }}
+                    className="prose prose-slate prose-sm max-w-none"
+                  >
+                    <h2 className="text-xl font-bold text-slate-900 mb-6 tracking-tight">Шаг {currentStep + 1}</h2>
+                    <MarkdownBlock content={stepData.theory} />
+                    {stepData.type === 'regression' && <div className="my-8"><InteractiveRegression /></div>}
+                    {stepData.type === 'jupyter' && <div className="my-8"><JupyterSandbox /></div>}
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key="task"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    transition={{ duration: 0.1 }}
+                    className="prose prose-slate prose-sm max-w-none"
+                  >
+                    <h2 className="text-xl font-bold text-slate-900 mb-6 tracking-tight">Практическое задание</h2>
+                    <div className="text-slate-800 text-sm leading-relaxed mb-10">
+                      <MarkdownBlock content={stepData.task} />
+                    </div>
+
+                    {/* Hint Section (Minimalist Design) */}
+                    {stepData.hint && (
+                      <div className="mt-10 border-t border-slate-100 pt-6 pb-4">
+                        {!isHintUnlocked ? (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Нужна помощь?</span>
+                            <button 
+                              onClick={() => spendXP(20, currentHintKey)}
+                              disabled={xp < 20}
+                              className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 disabled:text-slate-300 transition-colors"
+                            >
+                              Открыть подсказку за 20 XP
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600 m-0">Совет наставника</h3>
+                            <div className="text-[13px] text-slate-600 leading-relaxed opacity-90">
+                              <MarkdownBlock content={stepData.hint} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
            </div>
         </div>
 
-        {/* Правая панель */}
-        <div className="flex-1 flex flex-col gap-4 min-w-0">
-           <div className="flex flex-col flex-1 min-h-0 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="flex-1 flex flex-col min-h-0">
-                 <SandboxEditor code={code} onChange={handleCodeChange} onReset={handleReset} />
-                 
-                 <div className="flex justify-between items-center p-4 border-t border-slate-100 bg-white">
-                    <div className="flex gap-3">
-                      <button onClick={() => executeCode(false)} disabled={isExecuting} className="px-5 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-slate-200 transition-all active:scale-95">▶ Запустить</button>
-                      {stepData.testCode && (
-                        <button onClick={() => executeCode(true)} disabled={isExecuting} className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95">
-                          ✔ Проверить решение
-                        </button>
-                      )}
-                    </div>
-                    {isExecuting && (
-                      <button onClick={handleInterrupt} className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-700 tracking-widest px-2 animate-pulse transition-colors">
-                        Прервать
-                      </button>
-                    )}
-                 </div>
+        {/* RIGHT: IDE + Footer + Console */}
+        <div className="flex-[1.2] flex flex-col gap-4 min-w-0 overflow-hidden h-full">
+          
+          {/* IDE Block */}
+          <div className="flex-1 flex flex-col bg-[#282c34] rounded-lg border border-slate-200 overflow-hidden shadow-sm min-h-0">
+             {/* Toolbar */}
+             <div className="flex items-center justify-between px-4 h-10 bg-white border-b border-slate-200 shrink-0">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">main.py</span>
+                <div className="flex gap-4">
+                   <button onClick={handleReset} className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-wider transition-colors">Сброс</button>
+                   <button onClick={() => executeCode(false)} disabled={isExecuting} className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider transition-colors">Запустить</button>
+                </div>
+             </div>
 
-                 <AnimatePresence mode="wait">
-                    {testStatus === 'success' && (
-                       <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="mx-4 mb-4 p-4 bg-emerald-50/50 border-l-4 border-emerald-500 border border-slate-200 rounded-r-lg text-slate-800 text-sm font-bold flex justify-between items-center shadow-sm">
-                          <div className="flex items-center gap-3">
-                            <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                            <span>Задание выполнено верно!</span>
-                          </div>
-                          {currentStep < lesson.steps.length - 1 && (
-                            <button onClick={() => setCurrentStep(s => s + 1)} className="px-3 py-1.5 bg-emerald-500 text-white rounded-md text-[10px] font-black hover:bg-emerald-600 uppercase tracking-wider transition-all">Далее</button>
-                          )}
-                       </motion.div>
-                    )}
-                    {testStatus === 'error' && (
-                       <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="mx-4 mb-4 p-4 bg-rose-50/50 border-l-4 border-rose-500 border border-slate-200 rounded-r-lg text-slate-800 text-sm font-bold shadow-sm flex items-center gap-3">
-                          <svg className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                          <span>Ошибка выполнения. Проверьте консоль.</span>
-                       </motion.div>
-                    )}
-                 </AnimatePresence>
+             {/* Editor Area */}
+             <div className="flex-1 min-h-0 relative">
+                <SandboxEditor code={code} onChange={handleCodeChange} />
+             </div>
 
-                 <div className="h-56 shrink-0 border-t border-slate-100 bg-slate-900 rounded-b-xl overflow-hidden">
-                   <SandboxConsole output={output} testStatus={testStatus} />
-                 </div>
-              </div>
-           </div>
-           <SandboxPlots plots={plots} />
+             {/* Submit Area */}
+             <div className="flex items-center justify-between p-3 bg-white border-t border-slate-100 shrink-0">
+                <div className="flex items-center gap-3 px-1">
+                  {testStatus === 'success' && <span className="text-emerald-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>Верно</span>}
+                  {testStatus === 'error' && <span className="text-rose-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 bg-rose-500 rounded-full"></div>Ошибка</span>}
+                </div>
+                
+                <div className="flex gap-2">
+                   {stepData.testCode && (
+                     <button 
+                      onClick={() => executeCode(true)} 
+                      disabled={isExecuting}
+                      className="px-6 py-2 bg-slate-900 text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                     >
+                       {isExecuting ? 'Проверка...' : 'Проверить решение'}
+                     </button>
+                   )}
+                   {testStatus === 'success' && currentStep < lesson.steps.length - 1 && (
+                     <button 
+                       onClick={() => { setCurrentStep(s => s + 1); setActiveTab('theory'); }}
+                       className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-md active:scale-95"
+                     >
+                       Далее
+                     </button>
+                   )}
+                </div>
+             </div>
+          </div>
+
+          {/* Console Block */}
+          <div className="h-44 bg-[#0d1117] rounded-lg border border-slate-800 shadow-xl overflow-hidden flex flex-col shrink-0">
+             <div className="px-4 py-1.5 border-b border-slate-800/50 bg-[#161b22] flex justify-between items-center shrink-0">
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Терминал</span>
+                {isExecuting && <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></div>}
+             </div>
+             <div className="flex-1 overflow-hidden">
+               <SandboxConsole output={output} testStatus={testStatus} />
+             </div>
+          </div>
+          
+          <SandboxPlots plots={plots} />
         </div>
       </div>
     </div>
