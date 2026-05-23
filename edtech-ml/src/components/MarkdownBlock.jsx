@@ -4,6 +4,7 @@ import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import DocTooltip from './DocTooltip';
+import ChartBlock from './ChartBlock';
 import { GLOBAL_GLOSSARY } from '../utils/glossary';
 import 'katex/dist/katex.min.css';
 
@@ -11,7 +12,6 @@ export default function MarkdownBlock({ content, extraGlossary = {}, excludeTerm
   const glossary = useMemo(() => {
     const base = { ...GLOBAL_GLOSSARY, ...extraGlossary };
     if (excludeTerm) {
-      // Убираем сам термин из глоссария для этого блока, чтобы избежать саморекурсии
       const filtered = { ...base };
       const keyToExclude = Object.keys(filtered).find(
         k => k.toLowerCase() === excludeTerm.toLowerCase()
@@ -22,14 +22,12 @@ export default function MarkdownBlock({ content, extraGlossary = {}, excludeTerm
     return base;
   }, [extraGlossary, excludeTerm]);
 
-  // Экранирование спецсимволов для регулярки
   const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   const processText = (text) => {
     if (typeof text !== 'string' || text.trim() === '') return text;
 
     const terms = Object.keys(glossary).sort((a, b) => b.length - a.length);
-    // Ищем термины как отдельные слова или фразы (не внутри других слов)
     const pattern = `(${terms.map(t => escapeRegExp(t)).join('|')})`;
     const regex = new RegExp(pattern, 'gi');
     
@@ -70,7 +68,6 @@ export default function MarkdownBlock({ content, extraGlossary = {}, excludeTerm
         remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}
         components={{
-          // Перехватываем все основные текстовые контейнеры
           p: ({ children }) => <p className="mb-4 leading-relaxed">{enhance(children)}</p>,
           li: ({ children }) => <li className="mb-1">{enhance(children)}</li>,
           strong: ({ children }) => <strong className="font-bold text-slate-950">{enhance(children)}</strong>,
@@ -93,12 +90,25 @@ export default function MarkdownBlock({ content, extraGlossary = {}, excludeTerm
             </td>
           ),
           tr: ({ children }) => <tr className="last:border-0 hover:bg-slate-50/50 transition-colors">{children}</tr>,
-          code: ({ node, inline, ...props }) => 
-            inline ? (
-              <code className="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-sm font-mono" {...props} />
+          
+          code: ({ node, inline, className, children, ...props }) => {
+            const match = /language-(\w+)/.exec(className || '');
+            const lang = match ? match[1] : '';
+
+            if (lang === 'chart') {
+              return <ChartBlock content={String(children).replace(/\n$/, '')} />;
+            }
+
+            return inline ? (
+              <code className="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                {children}
+              </code>
             ) : (
-              <code {...props} />
-            ),
+              <code className={className} {...props}>
+                {children}
+              </code>
+            );
+          },
         }}
       >
         {content}
