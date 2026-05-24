@@ -53,7 +53,7 @@ function App() {
         </div>
       </header>
 
-      <main className={`mx-auto px-6 py-6 flex-1 min-h-0 overflow-hidden ${view === 'lesson' ? 'max-w-7xl w-full' : 'max-w-5xl w-full'}`}>
+      <main className={`mx-auto px-6 py-6 flex-1 min-h-0 ${view === 'lesson' ? 'max-w-7xl w-full overflow-hidden' : 'max-w-6xl w-full'}`}>
         <AnimatePresence mode="wait">
           {view === 'lesson' && currentLesson ? (
             <motion.div 
