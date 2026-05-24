@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ProgressProvider } from './context/ProgressContext'
+import { ThemeProvider } from './context/ThemeContext'
+import { TooltipProvider } from './context/TooltipContext'
 import './index.css' 
 import App from './App.jsx'
 
@@ -14,8 +16,12 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ProgressProvider>
-      <App />
-    </ProgressProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <ProgressProvider>
+          <App />
+        </ProgressProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </StrictMode>,
 )

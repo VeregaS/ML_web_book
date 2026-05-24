@@ -20,23 +20,23 @@ const GlossaryCard = ({ term, data }) => {
         damping: 35,
         opacity: { duration: 0.15 }
       }}
-      className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-500 h-full flex flex-col target:ring-4 target:ring-indigo-500/30 target:border-indigo-300"
+      className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col target:ring-4 target:ring-indigo-500/30"
     >
       <div className="flex items-center gap-3 mb-4">
         <div className="w-1.5 h-4 bg-indigo-600 rounded-full" />
-        <h3 className="text-lg font-bold text-slate-900">{term}</h3>
+        <h3 className="text-lg font-bold text-[var(--text-bright)]">{term}</h3>
       </div>
       
-      <div className="text-[14px] text-slate-600 leading-relaxed mb-6 custom-glossary-content">
+      <div className="text-[14px] text-[var(--text-main)] leading-relaxed mb-6 custom-glossary-content transition-all">
         <MarkdownBlock content={data.definition} excludeTerm={term} isGlossaryMode={true} />
       </div>
 
       {data.example && (
-        <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 mt-auto overflow-hidden">
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2.5 block">
+        <div className="bg-[var(--bg-subpanel)] rounded-lg p-5 border border-[var(--border-light)] mt-auto overflow-hidden transition-all">
+          <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2.5 block">
             Пример / Аналогия
           </span>
-          <div className="text-[14px] text-slate-700 italic leading-relaxed custom-glossary-content">
+          <div className="text-[14px] text-[var(--text-main)] italic leading-relaxed custom-glossary-content transition-all">
             <MarkdownBlock content={data.example} excludeTerm={term} isGlossaryMode={true} />
           </div>
         </div>
@@ -54,17 +54,16 @@ export default function GlossaryPage() {
     .sort((a, b) => a.localeCompare(b));
 
   return (
-    <div className="h-full flex flex-col overflow-hidden relative">
-      {/* Search Header - Fixed */}
+    <div className="h-full flex flex-col overflow-hidden relative transition-all">
       <div className="shrink-0 mb-8 text-center pt-2">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-4">Глоссарий терминов</h1>
-        <p className="text-slate-500 max-w-2xl mx-auto mb-8 text-sm">
+        <h1 className="text-3xl font-bold text-[var(--text-bright)] tracking-tight mb-4 transition-all">Глоссарий терминов</h1>
+        <p className="text-[var(--text-main)] max-w-2xl mx-auto mb-8 text-sm transition-all">
           Все ключевые понятия машинного обучения в одном месте. 
         </p>
         
         <div className="relative max-w-md mx-auto">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
@@ -73,12 +72,11 @@ export default function GlossaryPage() {
             placeholder="Поиск по терминам..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm text-sm"
+            className="w-full pl-12 pr-4 py-3 bg-[var(--bg-card)] border border-[var(--border-main)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm text-sm text-[var(--text-bright)] placeholder:text-[var(--text-muted)]"
           />
         </div>
       </div>
 
-      {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-scroll scrollbar-gutter-stable no-scrollbar pr-2 pb-8 relative">
         <AnimatePresence mode="popLayout">
           {filteredTerms.length > 0 ? (
@@ -86,8 +84,7 @@ export default function GlossaryPage() {
               key="grid"
               layout
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="grid grid-cols-1 md:grid-cols-2 gap-6 p-1 relative items-stretch min-h-full"
             >
               {filteredTerms.map(term => (
@@ -97,14 +94,12 @@ export default function GlossaryPage() {
           ) : (
             <motion.div 
               key="empty"
-              initial={{ opacity: 0, scale: 0.95 }} 
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
               className="absolute inset-0 flex flex-col items-center justify-center py-20 text-center"
             >
               <div className="text-4xl mb-4 grayscale opacity-40">🔍</div>
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Ничего не найдено</p>
-              <p className="text-slate-300 text-sm mt-1">Попробуйте изменить запрос</p>
+              <p className="text-[var(--text-muted)] font-bold uppercase tracking-widest text-xs">Ничего не найдено</p>
+              <p className="text-[var(--text-muted)] opacity-70 text-sm mt-1">Попробуйте изменить запрос</p>
             </motion.div>
           )}
         </AnimatePresence>

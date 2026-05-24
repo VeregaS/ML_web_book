@@ -79,10 +79,10 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
     <div className="space-y-6">
       {questions.length > 1 && (
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">
+          <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">
             Вопрос {currentQIdx + 1} из {questions.length}
           </span>
-          <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
+          <div className="flex-1 h-1 bg-[var(--border-main)] rounded-full overflow-hidden transition-all">
             <motion.div 
               className="h-full bg-indigo-500" 
               initial={{ width: 0 }}
@@ -99,7 +99,7 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
         </div>
       )}
 
-      <div className="text-base font-bold text-slate-900 leading-snug">
+      <div className="text-base font-bold text-[var(--text-bright)] leading-snug transition-colors">
         {currentQuiz.question}
       </div>
 
@@ -108,24 +108,24 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
           const isSelected = selectedIds.includes(option.id);
           const isCorrectAnswer = currentQuiz.correctAnswers.includes(option.id);
           
-          let cardStyle = "border-slate-200 bg-white hover:border-slate-300";
-          let indicatorStyle = "border-slate-200 text-transparent";
+          let cardStyle = "border-[var(--border-main)] bg-[var(--bg-card)] hover:border-indigo-400 transition-colors duration-300 shadow-sm";
+          let indicatorStyle = "border-[var(--border-main)] text-transparent";
 
           // Если вопрос решен (или мы в режиме просмотра пройденного урока)
           if (isCurrentQuestionSolved) {
             if (isCorrectAnswer) {
-              cardStyle = "border-emerald-500 bg-emerald-50/20";
-              indicatorStyle = "border-emerald-500 text-emerald-600";
+              cardStyle = "border-emerald-500 bg-emerald-500/10 transition-colors duration-300";
+              indicatorStyle = "border-emerald-500 text-emerald-500";
             } else if (isSelected) {
-              cardStyle = "border-rose-400 bg-rose-50/20 opacity-80";
+              cardStyle = "border-rose-400 bg-rose-500/10 opacity-80 transition-colors duration-300";
               indicatorStyle = "border-rose-400 text-rose-500";
             } else {
-              cardStyle = "border-slate-100 bg-white opacity-40";
-              indicatorStyle = "border-slate-100";
+              cardStyle = "border-[var(--border-light)] bg-[var(--bg-card)] opacity-40 transition-colors duration-300";
+              indicatorStyle = "border-[var(--border-light)]";
             }
           } else if (isSelected) {
-            cardStyle = "border-indigo-500 bg-indigo-50/10 shadow-sm";
-            indicatorStyle = "border-indigo-600 text-indigo-600";
+            cardStyle = "border-indigo-500 bg-indigo-500/10 shadow-md transition-colors duration-300 scale-[1.01]";
+            indicatorStyle = "border-indigo-500 text-indigo-500";
           }
 
           return (
@@ -135,7 +135,7 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
               disabled={isLocked}
               className={`w-full flex items-center gap-4 p-4 border rounded-lg transition-all duration-150 text-left ${cardStyle}`}
             >
-              <div className={`w-6 h-6 shrink-0 flex items-center justify-center border-[1px] bg-white transition-all ${
+              <div className={`w-6 h-6 shrink-0 flex items-center justify-center border-[1px] bg-[var(--bg-card)] transition-all ${
                 currentQuiz.multipleChoice ? 'rounded-md' : 'rounded-full'
               } ${indicatorStyle}`}>
                 {(isSelected || (isCurrentQuestionSolved && isCorrectAnswer)) && (
@@ -150,7 +150,7 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
                   </motion.div>
                 )}
               </div>
-              <span className="text-sm font-medium text-slate-700">{option.text}</span>
+              <span className="text-sm font-medium text-[var(--text-main)]">{option.text}</span>
             </button>
           );
         })}
@@ -161,7 +161,7 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
           <button
             onClick={handleCheck}
             disabled={selectedIds.length === 0}
-            className="px-8 py-2.5 bg-slate-900 text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-black transition-all active:scale-95 disabled:opacity-30"
+            className="px-8 py-2.5 bg-[var(--text-bright)] text-[var(--bg-card)] rounded-lg font-bold text-[10px] uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 disabled:opacity-30"
           >
             Проверить
           </button>
@@ -175,14 +175,14 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
             </button>
           ) : (
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-black uppercase text-emerald-600 tracking-tight flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase text-emerald-600 tracking-tight flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                 Задание выполнено
               </span>
               {isStepCompleted && (
                  <button 
                   onClick={() => { setCurrentQIdx(0); setIsCurrentQuestionSolved(true); setSelectedIds([]); }}
-                  className="text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors"
+                  className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest hover:text-indigo-600 transition-colors"
                  >
                    Повторить просмотр
                  </button>
@@ -193,7 +193,7 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
 
         <AnimatePresence>
           {status === 'error' && (
-            <motion.span initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="text-[10px] font-black uppercase text-rose-600">
+            <motion.span initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="text-[10px] font-bold uppercase text-rose-600">
               {errorMsg}
             </motion.span>
           )}
