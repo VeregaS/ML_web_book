@@ -58,9 +58,9 @@ h1, h2, h3 {
 }
 
 .glossary-table-container table {
-  min-width: 500px !important;
-  width: 100%;
+  width: 100% !important;
   border-collapse: collapse;
+  table-layout: auto;
 }
 
 /* Скрытие скроллбара при сохранении функционала */

@@ -74,18 +74,20 @@ export default function MarkdownBlock({ content, extraGlossary = {}, excludeTerm
           em: ({ children }) => <em className="italic">{enhance(children)}</em>,
           
           table: ({ children }) => (
-            <div className="glossary-table-container custom-scrollbar">
-              {children}
+            <div className="glossary-table-container custom-scrollbar w-full overflow-hidden mb-8">
+              <table className="w-full border-collapse table-fixed md:table-auto">
+                {children}
+              </table>
             </div>
           ),
-          thead: ({ children }) => <thead className="bg-slate-50 border-b border-slate-200">{children}</thead>,
+          thead: ({ children }) => <thead className="bg-slate-50/80 border-b-2 border-slate-100">{children}</thead>,
           th: ({ children }) => (
-            <th className="px-4 py-3 font-bold text-slate-900 text-left whitespace-nowrap">
+            <th className="px-6 py-4 font-black text-slate-900 text-left text-[11px] uppercase tracking-widest bg-slate-50/50">
               {enhance(children)}
             </th>
           ),
           td: ({ children }) => (
-            <td className="px-4 py-3 border-b border-slate-100 text-slate-600">
+            <td className="px-6 py-4 border-b border-slate-50 text-slate-600 text-sm leading-relaxed">
               {enhance(children)}
             </td>
           ),

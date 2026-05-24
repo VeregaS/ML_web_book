@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProgress } from '../context/ProgressContext';
 import { storage } from '../utils/storage';
+import ChartBlock from './ChartBlock';
 
 /**
  * QuizTask с поддержкой режима просмотра (Review Mode) для пройденных уроков.
@@ -89,6 +90,12 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
               transition={{ duration: 0.5 }}
             />
           </div>
+        </div>
+      )}
+
+      {currentQuiz.chart && (
+        <div className="mb-4 -mx-4 md:mx-0">
+          <ChartBlock content={JSON.stringify(currentQuiz.chart)} hideTitle={true} />
         </div>
       )}
 

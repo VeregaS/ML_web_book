@@ -16,34 +16,42 @@ import { useProgress } from '../context/ProgressContext';
 import { storage } from '../utils/storage';
 
 // Вспомогательный компонент для подсказок
-const HintBlock = ({ stepData, isHintUnlocked, xp, spendXP, currentHintKey, lessonGlossary }) => {
+const HintBlock = ({ stepData, isHintUnlocked, xp, spendXP, currentHintKey, lessonGlossary, isQuiz }) => {
   if (!stepData?.hint) return null;
 
+  // ЛОГИКА ВЫСОТЫ:
+  // В квизе: кнопка максимально сжата (h-[80px]), открытый совет по контенту (h-fit)
+  // В коде: кнопка растянута (flex-1), открытый совет растянут (flex-1)
+  const containerStyle = isQuiz 
+    ? (isHintUnlocked ? "h-fit" : "h-[80px] shrink-0")
+    : "flex-1 min-h-[140px]";
+
   return (
-    <div className="shrink-0 min-h-0 flex flex-col h-full overflow-hidden">
+    <div className={`flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${containerStyle}`}>
       {!isHintUnlocked ? (
         <button 
           onClick={() => spendXP(20, currentHintKey)} 
           disabled={xp < 20} 
-          className="w-full h-full flex flex-col items-center justify-center p-6 bg-white border border-slate-200 rounded-lg hover:border-indigo-300 transition-all group shadow-sm active:scale-[0.99]"
+          className={`w-full h-full flex items-center justify-between bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-all group shadow-sm active:scale-[0.98] ${isQuiz ? 'px-4 py-2' : 'p-6'}`}
         >
-          <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">💡</div>
-          <p className="text-[12px] font-black text-indigo-600 uppercase tracking-widest mb-1 text-center">Нужна помощь?</p>
-          <p className="text-sm text-slate-500 font-medium mb-4 text-center px-4">Разблокировать совет наставника</p>
-          <div className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-[11px] uppercase tracking-widest shadow-md group-hover:bg-indigo-700 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className={`${isQuiz ? 'w-8 h-8 text-base' : 'w-10 h-10 text-xl'} bg-indigo-50 rounded flex items-center justify-center group-hover:scale-110 transition-transform`}>💡</div>
+            <div className="text-left">
+              <p className="text-[11px] font-bold text-slate-900 uppercase tracking-widest mb-0.5">Нужна помощь?</p>
+              {!isQuiz && <p className="text-xs text-slate-500 font-medium">Разблокировать совет наставника</p>}
+            </div>
+          </div>
+          <div className="px-5 py-2 bg-indigo-600 text-white rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-sm hover:bg-indigo-700 transition-colors">
             20 XP
           </div>
         </button>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-300 h-full flex flex-col">
+        <div className={`bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-500 flex flex-col ${isQuiz ? 'h-fit' : 'h-full'}`}>
           <div className="bg-slate-50 border-b border-slate-200 px-4 h-10 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2">
-               <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.4)]"></div>
-               <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Совет наставника</h4>
-            </div>
+            <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">Совет наставника</h4>
             <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Активен</span>
           </div>
-          <div className="p-6 prose prose-slate prose-sm max-w-none flex-1 overflow-y-auto custom-scrollbar">
+          <div className={`p-6 prose prose-slate prose-sm max-w-none custom-scrollbar ${isQuiz ? 'h-fit' : 'flex-1 overflow-y-auto'}`}>
             <MarkdownBlock content={stepData.hint} extraGlossary={lessonGlossary} />
           </div>
         </div>
@@ -253,32 +261,35 @@ export default function LessonModule({ lesson, onBack }) {
 
         <div className="flex-[1.2] flex flex-col gap-4 min-w-0 overflow-hidden h-full">
           {isQuiz ? (
-            <div className="flex-1 flex flex-col gap-4 h-full">
-               <div className="flex-[3] flex flex-col bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden min-h-0">
+            <div className="flex-1 flex flex-col gap-4 h-full min-h-0">
+               <div className="flex-1 flex flex-col bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden min-h-0">
                   <div className="flex items-center bg-slate-50 border-b border-slate-200 px-4 h-10 shrink-0">
-                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Проверка знаний</span>
+                    <span className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">Проверка знаний</span>
                   </div>
                   <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white">
-                     <div className="max-w-2xl mx-auto prose prose-slate prose-sm">
-                       <QuizTask lessonId={lesson.id} stepIndex={currentStep} quiz={stepData.task} onSuccess={() => setCompletedSteps(prev => [...prev, currentStep])} />
+                     <div className="max-w-2xl mx-auto prose prose-slate prose-sm flex flex-col min-h-full">
+                       <div className="flex-1">
+                         <QuizTask lessonId={lesson.id} stepIndex={currentStep} quiz={stepData.task} onSuccess={() => setCompletedSteps(prev => [...prev, currentStep])} />
+                       </div>
 
                        {completedSteps.includes(currentStep) && currentStep < lesson.steps.length - 1 && (
-                         <div className="mt-8 pt-8 border-t border-slate-100">
+                         <div className="mt-8 pt-8 border-t border-slate-100 shrink-0">
                            <button onClick={() => { setCurrentStep(s => s + 1); setActiveTab('theory'); }} className="w-full py-3 bg-emerald-600 text-white rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-md active:scale-95">Перейти к следующему шагу</button>
                          </div>
                        )}
                      </div>
                   </div>
                </div>
-               <div className="flex-[2] min-h-0">
-                  <HintBlock 
+               <div className="shrink-0">
+                 <HintBlock 
                     stepData={stepData} 
                     isHintUnlocked={isHintUnlocked} 
                     xp={xp} 
                     spendXP={spendXP} 
                     currentHintKey={currentHintKey} 
                     lessonGlossary={lesson.glossary} 
-                  />
+                    isQuiz={isQuiz}
+                 />
                </div>
             </div>
           ) : (
@@ -326,6 +337,7 @@ export default function LessonModule({ lesson, onBack }) {
                   spendXP={spendXP} 
                   currentHintKey={currentHintKey} 
                   lessonGlossary={lesson.glossary} 
+                  isQuiz={isQuiz}
                 />
               </div>
             </div>
