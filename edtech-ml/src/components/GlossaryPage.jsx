@@ -20,10 +20,10 @@ const GlossaryCard = ({ term, data }) => {
         damping: 35,
         opacity: { duration: 0.15 }
       }}
-      className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col target:ring-4 target:ring-indigo-500/30"
+      className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col target:ring-4 target:ring-[var(--accent-primary)]/30"
     >
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-1.5 h-4 bg-indigo-600 rounded-full" />
+        <div className="w-1.5 h-4 bg-[var(--accent-primary)] rounded-full" />
         <h3 className="text-lg font-bold text-[var(--text-bright)]">{term}</h3>
       </div>
       
@@ -72,7 +72,7 @@ export default function GlossaryPage() {
             placeholder="Поиск по терминам..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[var(--bg-card)] border border-[var(--border-main)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm text-sm text-[var(--text-bright)] placeholder:text-[var(--text-muted)]"
+            className="w-full pl-12 pr-4 py-3 bg-[var(--bg-card)] border border-[var(--border-main)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/20 focus:border-[var(--accent-primary)] transition-all shadow-sm text-sm text-[var(--text-bright)] placeholder:text-[var(--text-muted)]"
           />
         </div>
       </div>

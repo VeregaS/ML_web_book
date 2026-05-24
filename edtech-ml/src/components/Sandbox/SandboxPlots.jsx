@@ -28,7 +28,7 @@ const SandboxPlots = ({ plots, metrics }) => {
       <div className="w-full">
         <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Динамика обучения (Loss)</h4>
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 overflow-x-auto">
-          <svg width={width} height={height} className="overflow-visible text-indigo-500 mx-auto block min-w-[300px]">
+          <svg width={width} height={height} className="overflow-visible text-[var(--accent-primary)] mx-auto block min-w-[300px]">
             {/* Оси */}
             <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#cbd5e1" strokeWidth="1" />
             <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#cbd5e1" strokeWidth="1" />

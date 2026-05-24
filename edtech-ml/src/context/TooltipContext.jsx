@@ -102,7 +102,7 @@ function TooltipItem({ data, onClose }) {
         <div className="w-80 bg-[var(--bg-card)] border border-[var(--border-main)] rounded-xl overflow-hidden shadow-2xl transition-colors duration-300">
           <div className="bg-[var(--bg-subpanel)] border-b border-[var(--border-main)] px-4 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-3.5 bg-indigo-500 rounded-full"></div>
+              <div className="w-1.5 h-3.5 bg-[var(--accent-primary)] rounded-full"></div>
               <h4 className="text-[13px] font-bold text-[var(--text-bright)] uppercase tracking-widest">{data.term}</h4>
             </div>
             <button onClick={onClose} className="p-1 hover:bg-[var(--border-main)] rounded-md transition-colors text-[var(--text-muted)]">

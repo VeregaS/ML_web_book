@@ -81,7 +81,7 @@ round(total_loss / len(points), 4)
     const class2 = [[2, -2], [3, -1], [1, -3], [4, -2]];
 
     const p1 = class1.map(c => board.create('point', c, { color: '#ef4444', name: '', size: 4, fixed: true }));
-    const p2 = class2.map(c => board.create('point', c, { color: isDark ? '#818CF8' : '#6366f1', name: '', size: 4, fixed: true }));
+    const p2 = class2.map(c => board.create('point', c, { color: isDark ? '#818CF8' : '#4F39F6', name: '', size: 4, fixed: true }));
     pointsRef.current = [...p1, ...p2];
 
     const lp1 = board.create('point', [-4, -1], { name: 'A', color: isDark ? '#F8FAFC' : '#0F172A', size: 3 });
@@ -105,7 +105,7 @@ round(total_loss / len(points), 4)
         </div>
         <div className="text-right shrink-0">
            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest block mb-1">Hinge Loss</span>
-           <span className="text-xl font-mono font-bold text-indigo-500">{loss ?? '---'}</span>
+           <span className="text-xl font-mono font-bold text-[var(--accent-primary)]">{loss ?? '---'}</span>
         </div>
       </div>
       <div id="svm-board" ref={boardRef} className="w-full h-80 bg-[var(--bg-card)] border border-[var(--border-main)] rounded-xl shadow-inner overflow-hidden transition-colors" />

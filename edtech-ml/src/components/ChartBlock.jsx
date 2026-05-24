@@ -50,7 +50,7 @@ export default function ChartBlock({ content, hideTitle = false }) {
     if (!isVisible) return null;
 
     const dsType = ds.type || type;
-    const color = ds.color || (index === 0 ? '#6366f1' : index === 1 ? '#ec4899' : '#10b981');
+    const color = ds.color || (index === 0 ? '#4F39F6' : index === 1 ? '#ec4899' : '#10b981');
     const pointsStr = ds.data.map(d => `${getX(d.x)},${getY(d.y)}`).join(' ');
 
     return (
@@ -174,7 +174,7 @@ export default function ChartBlock({ content, hideTitle = false }) {
           <div className="flex flex-wrap justify-center bg-[var(--bg-card)] border border-[var(--border-main)] p-1 rounded-xl shadow-sm transition-all">
             <button 
               onClick={() => setActiveDataset(0)}
-              className={`px-5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${activeDataset === 0 ? 'bg-indigo-600 text-white shadow-md' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
+              className={`px-5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${activeDataset === 0 ? 'bg-[var(--accent-primary)] text-white shadow-md' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
             >Все</button>
             {processedDatasets.map((ds, i) => (
               <button 
@@ -182,7 +182,7 @@ export default function ChartBlock({ content, hideTitle = false }) {
                 onClick={() => setActiveDataset(i + 1)}
                 className={`px-5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${activeDataset === (i + 1) ? 'shadow-sm text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
                 style={{ 
-                  backgroundColor: activeDataset === (i + 1) ? ds.color || '#6366f1' : 'transparent'
+                  backgroundColor: activeDataset === (i + 1) ? ds.color || '#4F39F6' : 'transparent'
                 }}
               >
                 {ds.label}

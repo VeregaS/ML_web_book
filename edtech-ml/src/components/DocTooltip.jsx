@@ -17,15 +17,15 @@ export default function DocTooltip({ term, originalTerm, definition, example, is
       const element = document.getElementById(targetId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element.classList.add('ring-4', 'ring-indigo-500/50');
-        setTimeout(() => element.classList.remove('ring-4', 'ring-indigo-500/50'), 2000);
+        element.classList.add('ring-4', 'ring-[var(--accent-primary)]/50');
+        setTimeout(() => element.classList.remove('ring-4', 'ring-[var(--accent-primary)]/50'), 2000);
       }
     };
 
     return (
       <button 
         onClick={handleScrollToTerm}
-        className="font-bold text-indigo-600 dark:text-indigo-400 underline decoration-indigo-500/30 hover:decoration-indigo-500 decoration-2 underline-offset-4 transition-all"
+        className="font-bold text-[var(--accent-primary)] underline decoration-[var(--accent-primary)]/30 hover:decoration-[var(--accent-primary)] decoration-2 underline-offset-4 transition-all"
       >
         {term}
       </button>
@@ -94,7 +94,7 @@ export default function DocTooltip({ term, originalTerm, definition, example, is
       <button 
         ref={triggerRef}
         onClick={toggle}
-        className="cursor-help font-semibold text-[var(--text-bright)] border-b border-dotted border-indigo-500/60 hover:border-indigo-500 hover:bg-indigo-500/5 transition-all px-0.5 rounded-sm select-none inline"
+        className="cursor-help font-semibold text-[var(--text-bright)] border-b border-dotted border-[var(--accent-primary)]/60 hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 transition-all px-0.5 rounded-sm select-none inline"
       >
         {term}
       </button>
@@ -128,7 +128,7 @@ export default function DocTooltip({ term, originalTerm, definition, example, is
                 >
                   <div className="bg-[var(--bg-subpanel)] border-b border-[var(--border-main)] px-4 py-2.5 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-3.5 bg-indigo-500 rounded-full"></div>
+                      <div className="w-1.5 h-3.5 bg-[var(--accent-primary)] rounded-full"></div>
                       <h4 className="text-[13px] font-bold text-[var(--text-bright)] uppercase tracking-widest truncate max-w-[180px]">{term}</h4>
                     </div>
                     <button 

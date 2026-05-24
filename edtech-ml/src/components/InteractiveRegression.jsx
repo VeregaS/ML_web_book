@@ -72,7 +72,7 @@ list(y_pred)
     pointsRef.current = initialPoints.map(([x, y], i) => {
       const p = board.create('point', [x, y], {
         name: ``,
-        color: isDark ? '#818CF8' : '#2563eb',
+        color: isDark ? '#818CF8' : '#4F39F6',
         size: 5,
         snapToGrid: false
       });
@@ -100,7 +100,7 @@ list(y_pred)
           <h3 className="text-[11px] font-bold text-[var(--text-bright)] uppercase tracking-widest mb-1">Живая Линейная Регрессия</h3>
           <p className="text-[11px] text-[var(--text-muted)] font-medium leading-tight">Перетаскивайте точки — линия тренда пересчитается автоматически.</p>
         </div>
-        {isLoading && <span className="text-[9px] bg-indigo-500/10 text-indigo-500 px-3 py-1 rounded-full animate-pulse font-black uppercase tracking-widest">Calculations...</span>}
+        {isLoading && <span className="text-[9px] bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] px-3 py-1 rounded-full animate-pulse font-black uppercase tracking-widest">Calculations...</span>}
       </div>
       <div 
         id="regression-board" 

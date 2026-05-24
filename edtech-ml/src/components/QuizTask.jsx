@@ -79,12 +79,12 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
     <div className="space-y-6">
       {questions.length > 1 && (
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">
+          <span className="text-[10px] font-bold text-[var(--accent-primary)] uppercase tracking-widest">
             Вопрос {currentQIdx + 1} из {questions.length}
           </span>
           <div className="flex-1 h-1 bg-[var(--border-main)] rounded-full overflow-hidden transition-all">
             <motion.div 
-              className="h-full bg-indigo-500" 
+              className="h-full bg-[var(--accent-primary)]" 
               initial={{ width: 0 }}
               animate={{ width: `${((currentQIdx + 1) / questions.length) * 100}%` }}
               transition={{ duration: 0.5 }}
@@ -108,24 +108,24 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
           const isSelected = selectedIds.includes(option.id);
           const isCorrectAnswer = currentQuiz.correctAnswers.includes(option.id);
           
-          let cardStyle = "border-[var(--border-main)] bg-[var(--bg-card)] hover:border-indigo-400 transition-colors duration-300 shadow-sm";
+          let cardStyle = "border-[var(--border-main)] bg-[var(--bg-card)] hover:border-[var(--accent-primary)] transition-colors duration-300 shadow-sm";
           let indicatorStyle = "border-[var(--border-main)] text-transparent";
 
           // Если вопрос решен (или мы в режиме просмотра пройденного урока)
           if (isCurrentQuestionSolved) {
             if (isCorrectAnswer) {
-              cardStyle = "border-emerald-500 bg-emerald-500/10 transition-colors duration-300";
-              indicatorStyle = "border-emerald-500 text-emerald-500";
+              cardStyle = "border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20 transition-colors duration-300";
+              indicatorStyle = "border-emerald-500 text-emerald-600 dark:text-emerald-400";
             } else if (isSelected) {
-              cardStyle = "border-rose-400 bg-rose-500/10 opacity-80 transition-colors duration-300";
-              indicatorStyle = "border-rose-400 text-rose-500";
+              cardStyle = "border-rose-400 bg-rose-500/10 dark:bg-rose-500/20 opacity-80 transition-colors duration-300";
+              indicatorStyle = "border-rose-400 text-rose-500 dark:text-rose-400";
             } else {
               cardStyle = "border-[var(--border-light)] bg-[var(--bg-card)] opacity-40 transition-colors duration-300";
               indicatorStyle = "border-[var(--border-light)]";
             }
           } else if (isSelected) {
-            cardStyle = "border-indigo-500 bg-indigo-500/10 shadow-md transition-colors duration-300 scale-[1.01]";
-            indicatorStyle = "border-indigo-500 text-indigo-500";
+            cardStyle = "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-md transition-colors duration-300 scale-[1.01]";
+            indicatorStyle = "border-[var(--accent-primary)] text-[var(--accent-primary)]";
           }
 
           return (
@@ -169,20 +169,20 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
           currentQIdx < questions.length - 1 ? (
             <button
               onClick={handleNext}
-              className="px-8 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-md"
+              className="px-8 py-2.5 bg-[var(--accent-primary)] text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 shadow-md"
             >
               Следующий вопрос
             </button>
           ) : (
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-bold uppercase text-emerald-600 tracking-tight flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-tight flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                 Задание выполнено
               </span>
               {isStepCompleted && (
                  <button 
                   onClick={() => { setCurrentQIdx(0); setIsCurrentQuestionSolved(true); setSelectedIds([]); }}
-                  className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest hover:text-indigo-600 transition-colors"
+                  className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--accent-primary)] transition-colors"
                  >
                    Повторить просмотр
                  </button>
@@ -193,7 +193,7 @@ export default function QuizTask({ lessonId, stepIndex, quiz, onSuccess }) {
 
         <AnimatePresence>
           {status === 'error' && (
-            <motion.span initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="text-[10px] font-bold uppercase text-rose-600">
+            <motion.span initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="text-[10px] font-bold uppercase text-rose-600 dark:text-rose-400">
               {errorMsg}
             </motion.span>
           )}

@@ -66,27 +66,27 @@ export default function AITutorAgent({ code, error, isActive }) {
     <motion.div 
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="flex flex-col bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden h-full max-h-150"
+      className="flex flex-col bg-[var(--bg-app)] rounded-3xl border border-[var(--border-main)] shadow-xl overflow-hidden h-full max-h-150 transition-colors duration-300"
     >
-      <div className="bg-slate-900 p-4 flex items-center gap-3">
-        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-lg">🤖</div>
+      <div className="bg-[var(--bg-subpanel)] p-4 flex items-center gap-3 border-b border-[var(--border-main)] transition-colors duration-300">
+        <div className="w-8 h-8 bg-[var(--accent-primary)] rounded-full flex items-center justify-center text-lg shadow-sm">🤖</div>
         <div>
-          <h4 className="text-sm font-bold text-white">AI-Тьютор</h4>
-          <p className="text-[10px] text-slate-400">Всегда готов помочь</p>
+          <h4 className="text-sm font-bold text-[var(--text-bright)]">AI-Тьютор</h4>
+          <p className="text-[10px] text-[var(--text-muted)] font-medium uppercase tracking-wider">Всегда готов помочь</p>
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[var(--bg-app)] custom-scrollbar transition-colors duration-300">
         {messages.length === 0 && !isTyping && (
-          <p className="text-center text-slate-400 text-sm py-10">
+          <p className="text-center text-[var(--text-muted)] text-sm py-10">
             Ошибок пока нет. Бот спит... 😴
           </p>
         )}
         
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${
-              msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 border border-slate-100'
+            <div className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm transition-all duration-300 ${
+              msg.role === 'user' ? 'bg-[var(--accent-primary)] text-white' : 'bg-[var(--bg-card)] text-[var(--text-main)] border border-[var(--border-main)]'
             }`}>
               {msg.text}
             </div>
@@ -95,20 +95,20 @@ export default function AITutorAgent({ code, error, isActive }) {
 
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex gap-1">
-              <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce"></span>
-              <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-              <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+            <div className="bg-[var(--bg-card)] p-3 rounded-2xl border border-[var(--border-main)] shadow-sm flex gap-1.5 transition-colors duration-300">
+              <span className="w-1.5 h-1.5 bg-[var(--text-muted)] rounded-full animate-bounce"></span>
+              <span className="w-1.5 h-1.5 bg-[var(--text-muted)] rounded-full animate-bounce [animation-delay:0.2s]"></span>
+              <span className="w-1.5 h-1.5 bg-[var(--text-muted)] rounded-full animate-bounce [animation-delay:0.4s]"></span>
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-4 border-t border-slate-100 bg-white">
+      <div className="p-4 border-t border-[var(--border-main)] bg-[var(--bg-card)] transition-colors duration-300">
         <button 
           onClick={askTutor}
           disabled={isTyping || !error}
-          className="w-full py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors"
+          className="w-full py-3 bg-[var(--accent-primary)] text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:opacity-90 disabled:opacity-30 transition-all active:scale-[0.98] shadow-md"
         >
           {messages.length > 0 ? "Спросить еще раз" : "Проанализировать ошибку"}
         </button>

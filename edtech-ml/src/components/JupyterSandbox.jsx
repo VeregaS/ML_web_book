@@ -14,7 +14,7 @@ export default function JupyterSandbox() {
             Пишите код и нажимайте <span className="font-mono bg-slate-100 px-1 rounded">Shift + Enter</span>
           </p>
         </div>
-        <div className="flex items-center gap-2 text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded border border-indigo-100">
+        <div className="flex items-center gap-2 text-[10px] font-black text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 px-3 py-1.5 rounded border border-[var(--accent-primary)]/20">
           LIVE ENV
         </div>
       </div>
@@ -23,7 +23,7 @@ export default function JupyterSandbox() {
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-10">
             <div className="flex flex-col items-center gap-2">
-              <div className="w-6 h-6 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-slate-300 border-t-[var(--accent-primary)] rounded-full animate-spin"></div>
               <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Загрузка ядра...</p>
             </div>
           </div>

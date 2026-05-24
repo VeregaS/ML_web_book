@@ -28,7 +28,7 @@ export default function LiveMetrics({ metrics }) {
   return (
     <div className="w-full mt-4 bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
       <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-        <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+        <span className="w-2 h-2 bg-[var(--accent-primary)] rounded-full animate-pulse"></span>
         Кривая обучения (Loss Curve)
       </h4>
       <div className="relative overflow-hidden">
@@ -40,7 +40,7 @@ export default function LiveMetrics({ metrics }) {
           {/* Path */}
           <motion.polyline
             fill="none"
-            stroke="#4f46e5"
+            stroke="#4F39F6"
             strokeWidth="2.5"
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -56,7 +56,8 @@ export default function LiveMetrics({ metrics }) {
               cx={getX(m.epoch)}
               cy={getY(m.loss)}
               r="3"
-              className="fill-indigo-600 shadow-sm"
+              fill="#4F39F6"
+              className="shadow-sm"
             />
           ))}
         </svg>

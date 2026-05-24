@@ -16,11 +16,11 @@ const LessonItem = ({ lesson, index, isCompleted, onSelect }) => {
       className={`group relative w-full flex flex-col p-5 border rounded-2xl transition-all duration-300 text-left bg-[var(--bg-card)] shadow-sm
         ${isCompleted 
           ? 'border-emerald-500 border-2' 
-          : 'border-[var(--border-main)] hover:border-indigo-500 dark:hover:border-indigo-900 hover:shadow-md hover:-translate-y-0.5'
+          : 'border-[var(--border-main)] hover:border-[var(--accent-primary)] hover:shadow-md hover:-translate-y-0.5'
         }`}
     >
       <div className="flex justify-between items-start mb-2">
-        <span className={`text-[15px] font-bold leading-snug transition-colors ${isCompleted ? 'text-[var(--text-main)] opacity-70' : 'text-[var(--text-bright)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>
+        <span className={`text-[15px] font-bold leading-snug transition-colors ${isCompleted ? 'text-[var(--text-main)] opacity-70' : 'text-[var(--text-bright)] group-hover:text-[var(--accent-primary)]'}`}>
           Урок {index + 1}: {lesson.title.replace(/^Урок\s+\d+:\s*/i, '')}
         </span>
         {isCompleted && (
@@ -86,9 +86,9 @@ const ModuleView = ({ moduleName, lessons, onSelectLesson, onBack }) => {
     >
       <button 
         onClick={onBack}
-        className="group flex items-center gap-2 text-[var(--text-muted)] hover:text-indigo-600 transition-colors mb-8"
+        className="group flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors mb-8"
       >
-        <div className="w-8 h-8 rounded-full border border-[var(--border-main)] flex items-center justify-center group-hover:border-indigo-400 group-hover:bg-indigo-50/50 transition-all">
+        <div className="w-8 h-8 rounded-full border border-[var(--border-main)] flex items-center justify-center group-hover:border-[var(--accent-primary)] group-hover:bg-[var(--accent-primary)]/10 transition-all">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
@@ -129,7 +129,7 @@ const ModuleView = ({ moduleName, lessons, onSelectLesson, onBack }) => {
                 animate={{ strokeDashoffset: 2 * Math.PI * 64 * (1 - progress / 100) }}
                 strokeLinecap="round"
                 fill="transparent"
-                className="text-indigo-600 dark:text-indigo-400"
+                className="text-[var(--accent-primary)]"
                 transition={{ duration: 1.5, ease: "easeInOut" }}
               />
             </svg>
@@ -158,9 +158,9 @@ const ModuleView = ({ moduleName, lessons, onSelectLesson, onBack }) => {
 
 const ModuleIcon = ({ idx }) => {
   const themes = [
-    { bg: 'bg-indigo-500/10', stroke: 'text-indigo-500', svg: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 3v18h18" strokeLinecap="round"/><path d="M18 9l-6 6-4-4-5 5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="18" cy="9" r="1" fill="currentColor"/></svg>) },
-    { bg: 'bg-emerald-500/10', stroke: 'text-emerald-500', svg: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18" strokeLinecap="round"/><circle cx="7.5" cy="7.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="16.5" r="1.5" fill="currentColor"/></svg>) },
-    { bg: 'bg-rose-500/10', stroke: 'text-rose-500', svg: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="18" cy="5" r="3"/><circle cx="18" cy="19" r="3"/><circle cx="6" cy="12" r="3"/><path d="M9 12h6M15.5 6.5l-6.5 4M15.5 17.5l-6.5-4" strokeLinecap="round"/></svg>) }
+    { bg: 'bg-[var(--accent-primary)]/10', stroke: 'text-[var(--accent-primary)]', svg: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 3v18h18" strokeLinecap="round"/><path d="M18 9l-6 6-4-4-5 5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="18" cy="9" r="1" fill="currentColor"/></svg>) },
+    { bg: 'bg-emerald-500/10 dark:bg-emerald-500/20', stroke: 'text-emerald-500 dark:text-emerald-400', svg: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18" strokeLinecap="round"/><circle cx="7.5" cy="7.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="16.5" r="1.5" fill="currentColor"/></svg>) },
+    { bg: 'bg-rose-500/10 dark:bg-rose-500/20', stroke: 'text-rose-500 dark:text-rose-400', svg: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="18" cy="5" r="3"/><circle cx="18" cy="19" r="3"/><circle cx="6" cy="12" r="3"/><path d="M9 12h6M15.5 6.5l-6.5 4M15.5 17.5l-6.5-4" strokeLinecap="round"/></svg>) }
   ];
   const theme = themes[idx % themes.length];
   return <div className={`w-14 h-14 ${theme.bg} rounded-lg flex items-center justify-center p-3 ${theme.stroke} group-hover:scale-110 transition-transform duration-500`}>{theme.svg}</div>;
@@ -182,11 +182,11 @@ const ModuleGrid = ({ lessons, onSelectModule }) => {
             whileHover={{ y: -8 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onSelectModule(moduleName)}
-            className="relative bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-10 text-left shadow-sm hover:shadow-xl hover:border-indigo-500 dark:hover:border-indigo-900 transition-all group flex flex-col h-full overflow-hidden"
+            className="relative bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-10 text-left shadow-sm hover:shadow-xl hover:border-[var(--accent-primary)] transition-all group flex flex-col h-full overflow-hidden"
           >
             <div className="relative z-10">
               <ModuleIcon idx={idx} />
-              <h3 className="text-2xl font-bold text-[var(--text-bright)] leading-tight mt-8 mb-4 group-hover:text-indigo-600 transition-colors">{moduleName}</h3>
+              <h3 className="text-2xl font-bold text-[var(--text-bright)] leading-tight mt-8 mb-4 group-hover:text-[var(--accent-primary)] transition-colors">{moduleName}</h3>
               <p className="text-[var(--text-main)] text-sm mb-10 flex-1 leading-relaxed line-clamp-3">Погрузитесь в {moduleName.toLowerCase()}. Вас ждут {moduleLessons.length} практических уроков, формулы и интерактивные задания.</p>
             </div>
             <div className="mt-auto relative z-10 pt-4 border-t border-[var(--border-light)]">
@@ -195,7 +195,7 @@ const ModuleGrid = ({ lessons, onSelectModule }) => {
                 <span className="text-sm font-bold text-[var(--text-main)] tabular-nums">{progress}%</span>
               </div>
               <div className="h-2.5 w-full bg-[var(--border-main)] rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} className={`h-full ${progress === 100 ? 'bg-emerald-500' : 'bg-indigo-600'}`}/>
+                <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} className={`h-full ${progress === 100 ? 'bg-emerald-500' : 'bg-[var(--accent-primary)]'}`}/>
               </div>
             </div>
           </motion.button>
@@ -205,20 +205,19 @@ const ModuleGrid = ({ lessons, onSelectModule }) => {
   );
 };
 
-export default function CourseMap({ lessons, onSelectLesson }) {
-  const [selectedModule, setSelectedModule] = useState(null);
+export default function CourseMap({ lessons, onSelectLesson, activeModule, setActiveModule }) {
   return (
     <AnimatePresence mode="wait">
-      {!selectedModule ? (
+      {!activeModule ? (
         <motion.div key="grid" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="w-full">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-[var(--text-bright)] tracking-tight mb-4 transition-all">Траектория обучения</h1>
             <p className="text-[var(--text-main)] max-w-2xl mx-auto transition-all">Выберите модуль, чтобы погрузиться в изучение Machine Learning через практику и интерактив.</p>
           </div>
-          <ModuleGrid lessons={lessons} onSelectModule={setSelectedModule} />
+          <ModuleGrid lessons={lessons} onSelectModule={setActiveModule} />
         </motion.div>
       ) : (
-        <ModuleView key="module" moduleName={selectedModule} lessons={lessons} onSelectLesson={onSelectLesson} onBack={() => setSelectedModule(null)}/>
+        <ModuleView key="module" moduleName={activeModule} lessons={lessons} onSelectLesson={onSelectLesson} onBack={() => setActiveModule(null)}/>
       )}
     </AnimatePresence>
   );

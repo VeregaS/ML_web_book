@@ -47,7 +47,7 @@ history
         points.map(p => p[0]),
         points.map(p => p[1])
       ], { 
-        strokeColor: isDark ? '#818CF8' : '#6366f1', 
+        strokeColor: isDark ? '#818CF8' : '#4F39F6', 
         strokeWidth: 4, 
         strokeOpacity: 0.9 
       });
@@ -104,9 +104,9 @@ history
     // Начальная точка
     const p = board.create('point', [3, 4], {
       name: 'START',
-      color: isDark ? '#F8FAFC' : '#4f46e5',
+      color: isDark ? '#F8FAFC' : '#4F39F6',
       size: 5,
-      label: { color: isDark ? '#F8FAFC' : '#4f46e5', fontWeight: 'bold' }
+      label: { color: isDark ? '#F8FAFC' : '#4F39F6', fontWeight: 'bold' }
     });
     startPointRef.current = p;
     p.on('drag', () => debouncedRun(p.X(), p.Y(), lr));
@@ -155,7 +155,7 @@ history
         <div className="flex flex-col items-end gap-2 w-48 shrink-0">
           <div className="flex justify-between w-full">
             <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Learning Rate</span>
-            <span className="text-xs font-mono font-bold text-indigo-500">{lr}</span>
+            <span className="text-xs font-mono font-bold text-[var(--accent-primary)]">{lr}</span>
           </div>
           <input 
             type="range" 
@@ -164,7 +164,7 @@ history
             step="0.01" 
             value={lr} 
             onChange={(e) => setLr(parseFloat(e.target.value))}
-            className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+            className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[var(--accent-primary)]"
           />
         </div>
       </div>
