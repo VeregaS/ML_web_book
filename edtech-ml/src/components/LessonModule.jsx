@@ -32,24 +32,31 @@ const HintBlock = ({ stepData, isHintUnlocked, xp, spendXP, currentHintKey, less
         <button 
           onClick={() => spendXP(20, currentHintKey)} 
           disabled={xp < 20} 
-          className={`w-full h-full flex items-center justify-between bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl hover:border-[var(--accent-primary)] transition-colors duration-300 group shadow-sm active:scale-[0.98] ${isQuiz ? 'px-4 py-2' : 'p-6'}`}
+          className={`w-full h-full flex items-center justify-between bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl hover:border-[var(--accent-primary)] transition-colors duration-300 group shadow-sm active:scale-[0.98] ${isQuiz ? 'px-5 py-3' : 'p-6'}`}
         >
-          <div className="flex items-center gap-4">
-            <div className={`${isQuiz ? 'w-8 h-8 text-base' : 'w-10 h-10 text-xl'} bg-[var(--bg-subpanel)] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>💡</div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-sm shrink-0 group-hover:scale-110 transition-transform">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </div>
             <div className="text-left">
-              <p className="text-[11px] font-bold text-[var(--text-bright)] uppercase tracking-widest mb-0.5">Нужна помощь?</p>
-              {!isQuiz && <p className="text-xs text-[var(--text-muted)] font-medium transition-colors duration-300">Разблокировать совет наставника</p>}
+              <p className="text-[12px] font-semibold text-[var(--text-bright)] uppercase tracking-widest mb-0.5">Нужна помощь?</p>
+              {!isQuiz && <p className="text-[11px] text-[var(--text-muted)] font-medium transition-colors duration-300">Разблокировать совет наставника</p>}
             </div>
           </div>
-          <div className="px-5 py-2 bg-[var(--accent-primary)] text-white rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-sm hover:opacity-90 transition-opacity duration-300">
+          <div className="px-5 py-2 bg-[var(--accent-primary)] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-sm hover:opacity-90 transition-opacity duration-300">
             20 XP
           </div>
         </button>
       ) : (
         <div className={`bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-500 flex flex-col transition-colors duration-300 ${isQuiz ? 'h-fit' : 'h-full'}`}>
-          <div className="bg-[var(--bg-subpanel)] border-b border-[var(--border-main)] px-4 h-10 flex items-center justify-between shrink-0 transition-colors duration-300">
-            <h4 className="text-[11px] font-bold text-[var(--text-bright)] uppercase tracking-widest">Совет наставника</h4>
-            <span className="text-[10px] font-bold text-emerald-500 dark:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-0.5 rounded-lg border border-emerald-500/20 transition-colors duration-300">Активен</span>
+          <div className="flex items-center justify-between bg-[var(--bg-subpanel)] border-b border-[var(--border-main)] px-5 py-3 shrink-0 transition-colors duration-300">
+             <div className="flex items-center gap-3">
+               <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-sm shrink-0">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+               </div>
+               <span className="text-[12px] font-semibold text-[var(--text-bright)] uppercase tracking-widest">Совет наставника</span>
+             </div>
+             <span className="text-[10px] font-bold text-emerald-500 dark:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/20 transition-colors duration-300">Активен</span>
           </div>
           <div className={`p-6 prose prose-slate dark:prose-invert prose-sm max-w-none no-scrollbar transition-colors duration-300 ${isQuiz ? 'h-fit' : 'flex-1 overflow-y-auto'}`}>
             <MarkdownBlock content={stepData.hint} extraGlossary={lessonGlossary} />
